@@ -1,0 +1,56 @@
+{
+  "versions": [
+    {
+      "number": 1,
+      "name": "Catálogo base de la tesis",
+      "status": "publicada",
+      "justification": "Valores de importancia sugerida de la tesis (Tabla 5.3).",
+      "suggested_importance": {
+        "Compatibilidad": 3,
+        "Fiabilidad": 3,
+        "Mantenibilidad": 3,
+        "Personalización": 3,
+        "Prueba": 3,
+        "Documentación": 2,
+        "Portabilidad": 2,
+        "Reusabilidad": 2,
+        "Usabilidad": 2,
+        "Apoyo de la alta dirección": 3,
+        "Formación": 3,
+        "Soporte": 3,
+        "Actitud hacia el cambio": 2,
+        "Bloqueo de proveedores": 2,
+        "Casos de estudio de adopción FLOSS": 2,
+        "Centralidad de las TI": 2,
+        "Tiempo de adopción": 2,
+        "Coste total de propiedad (TCO)": 3
+      }
+    },
+    {
+      "number": 2,
+      "name": "Actualización 2020 a 2025",
+      "status": "activa",
+      "justification": "Actualización con literatura 2020 a 2025: IL por cuartiles de r = citas / subfactores, cruzada con IE = 3 de la matriz de la tesis.",
+      "suggested_importance": {
+        "Compatibilidad": 2,
+        "Fiabilidad": 3,
+        "Mantenibilidad": 3,
+        "Personalización": 2,
+        "Prueba": 3,
+        "Documentación": 2,
+        "Portabilidad": 2,
+        "Reusabilidad": 3,
+        "Usabilidad": 2,
+        "Apoyo de la alta dirección": 3,
+        "Formación": 2,
+        "Soporte": 3,
+        "Actitud hacia el cambio": 2,
+        "Bloqueo de proveedores": 3,
+        "Casos de estudio de adopción FLOSS": 2,
+        "Centralidad de las TI": 2,
+        "Tiempo de adopción": 3,
+        "Coste total de propiedad (TCO)": 3
+      }
+    }
+  ]
+}
