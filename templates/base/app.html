@@ -1,0 +1,60 @@
+{% extends "base/document.html" %}
+{% load static ui %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/layouts/app.css' %}">{% block page_styles %}{% endblock %}{% endblock %}
+{% block body %}
+<div class="app" data-app>
+    <aside class="sidebar" aria-label="Navegación principal">
+        <div class="sidebar__brand">
+            {% include "components/brand.html" %}
+            <button class="sidebar__toggle" type="button" data-sidebar-toggle aria-label="Contraer menú">{% include "components/icon.html" with name="panel" stroke="1.5" %}</button>
+        </div>
+        <nav class="sidebar__nav">
+            {% block sidebar_nav %}{% endblock %}
+            <section class="nav-section">
+                <h2 class="nav-section__title">Otros {% include "components/icon.html" with name="chevron-down" %}</h2>
+                <div class="nav-section__items">
+                    {% url 'help' as help_url %}
+                    {% include "components/nav_item.html" with href=help_url|default:"/ayuda/" icon="book" label="Ayuda · Guía GUIOS" match="/ayuda/" %}
+                </div>
+            </section>
+        </nav>
+        <div class="sidebar__user">
+            <span class="avatar" aria-hidden="true"></span>
+            <div class="sidebar__user-text">
+                <p class="sidebar__user-name">{{ request.user.get_full_name|default:request.user.email }}</p>
+                <p class="sidebar__user-meta">{% block user_meta %}{{ shell_role }}{% endblock %}</p>
+            </div>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button class="sidebar__logout" type="submit" aria-label="Cerrar sesión" title="Cerrar sesión">{% include "components/icon.html" with name="logout" %}</button>
+            </form>
+        </div>
+    </aside>
+    <div class="app__main">
+        <header class="topbar">
+            <div class="topbar__heading">
+                <p class="topbar__title">{% block topbar_title %}Panel de inicio{% endblock %}</p>
+                <p class="topbar__subtitle">{{ shell_organization }} · {% today_long %}</p>
+            </div>
+            <form class="search" role="search" method="get" action="{% block search_action %}/historial/{% endblock %}">
+                {% include "components/icon.html" with name="search" %}
+                <input type="search" name="q" placeholder="Buscar..." aria-label="Buscar" data-search>
+                <kbd>Ctrl K</kbd>
+            </form>
+            <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Cambiar modo oscuro">
+                <span class="icon-moon">{% include "components/icon.html" with name="moon" %}</span>
+                <span class="icon-sun">{% include "components/icon.html" with name="sun" %}</span>
+            </button>
+            {% block topbar_actions %}{% endblock %}
+        </header>
+        <main class="page">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% block modals %}{% endblock %}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/shell.js' %}" defer></script>
+{% block page_scripts %}{% endblock %}
+{% endblock %}

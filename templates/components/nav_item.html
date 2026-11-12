@@ -1,0 +1,5 @@
+{% load ui %}<a class="nav-item{% if exact and request.path == match or not exact and request.path|startswith:match %} is-active{% endif %}" href="{{ href }}"{% if exact and request.path == match or not exact and request.path|startswith:match %} aria-current="page"{% endif %} title="{{ label }}">
+    {% include "components/icon.html" with name=icon %}
+    <span>{{ label }}</span>
+    {% if badge %}<span class="nav-item__badge">{{ badge }}</span>{% endif %}
+</a>

@@ -1,0 +1,99 @@
+{% extends "base_decisor.html" %}
+{% load static ui %}
+{% block title %}Panel de inicio · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}">{% endblock %}
+{% block content %}
+<header class="page__header">
+    <h1 class="page__title">Hola, {{ request.user.first_name }}</h1>
+    <p class="page__subtitle">Este es el avance de tus evaluaciones.</p>
+</header>
+
+<div class="dashboard">
+    <section class="dashboard__stats" aria-label="Resumen">
+        <article class="panel stat">
+            <p class="stat__label">{% include "components/icon.html" with name="check-circle" %}Evaluaciones realizadas</p>
+            <p class="stat__value">{{ summary.finished_count }}</p>
+            <p class="stat__caption">finalizadas en total</p>
+        </article>
+        <article class="panel stat">
+            <p class="stat__label">{% include "components/icon.html" with name="pencil" %}Evaluaciones en borrador</p>
+            <p class="stat__value">{{ summary.drafts_count }}</p>
+            <p class="stat__caption">pendientes de terminar</p>
+        </article>
+        <article class="panel stat">
+            <p class="stat__label">{% include "components/icon.html" with name="clock" %}Última evaluación</p>
+            {% with last=summary.last %}
+            {% if last %}
+            <a class="last-evaluation" href="{{ last.get_absolute_url }}">
+                <span class="letter letter--tile">{{ last.recommendation }}</span>
+                <span>
+                    <span class="last-evaluation__name">{{ last.software }}</span><br>
+                    <span class="last-evaluation__meta">{{ last.finished_at|short_date }} · {{ last.recommendation|recommendation_name }}</span>
+                </span>
+            </a>
+            {% else %}
+            <p class="stat__caption">Aún no has finalizado evaluaciones</p>
+            {% endif %}
+            {% endwith %}
+        </article>
+    </section>
+
+    {% with resume=summary.resume %}
+    {% if resume %}
+    <section class="panel resume" aria-label="Continúa donde lo dejaste">
+        <span class="resume__icon">{% include "components/icon.html" with name="pencil" %}</span>
+        <div class="resume__body">
+            <p class="resume__label">Continúa donde lo dejaste</p>
+            <p class="resume__name">{{ resume.software }}</p>
+            <p class="resume__step">{{ resume.step_label }}</p>
+            <div class="progress" role="progressbar" aria-valuenow="{{ resume.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress__bar" style="width: {{ resume.progress }}%"></div></div>
+        </div>
+        <span class="resume__edited">Editado hace {{ resume.updated_at|ago_short }}</span>
+        <a class="button button--primary" href="{{ resume.url }}">Continuar evaluación</a>
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    <div class="dashboard__bottom">
+        <section class="panel">
+            <header class="panel__header">
+                <h2 class="panel__title">Evaluaciones recientes</h2>
+                <a class="link" href="/historial/">Ver historial</a>
+            </header>
+            {% if summary.recent %}
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Software</th><th>Evaluador</th><th>Fecha</th><th>Estado</th><th>Recomendación</th></tr></thead>
+                    <tbody>
+                    {% for evaluation in summary.recent %}
+                    <tr>
+                        <td>{{ evaluation.software }}</td>
+                        <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ evaluation.author.get_full_name }}</span></td>
+                        <td>{{ evaluation.finished_at|short_date }}</td>
+                        <td><span class="pill pill--success">Finalizada</span></td>
+                        <td><span class="recommendation"><span class="letter">{{ evaluation.recommendation }}</span>{{ evaluation.recommendation|recommendation_name }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            {% include "components/empty.html" with title="Aún no hay evaluaciones finalizadas" text="Cuando tu organización finalice evaluaciones aparecerán aquí." %}
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h2 class="panel__title">Recomendaciones</h2>
+            <p class="panel__subtitle">Resumen por tipo de resultado ({{ summary.finished_count }} finalizada{{ summary.finished_count|pluralize }})</p>
+            <div class="summary">
+                {% for row in summary.by_letter %}
+                <div class="summary__row">
+                    <p class="summary__head"><span class="letter">{{ row.letter }}</span>{{ row.label }}<span class="summary__count">{{ row.count }}</span></p>
+                    <div class="progress"><div class="progress__bar{% if not row.is_top %} progress__bar--muted{% endif %}" style="width: {{ row.percent }}%"></div></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

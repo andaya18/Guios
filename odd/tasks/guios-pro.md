@@ -13,7 +13,7 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - T0 [done] Scaffold and register apps catalog/evaluations/exports. Route: orchestrator inline.
 - T1 [in progress] Phase 1 UI fix: tokens, auth layout, A01-A03 copy, base templates T01/T02. S1, S2. Route: orchestrator. Surface: templates/**, static/**, apps/accounts/**.
 - T2 [handoff odd/handoff/T2-catalog.md → session 01a1d178-4969-715f-8948-2cc5bfd5dd1e] Catalog app. S2, S3. Surface: apps/catalog/**.
-- T3 [handoff odd/handoff/T3-services.md → session 01a1d178-8724-700f-82ae-bf8e79b285e1] Pure calculation services and tests. S2, S4. Surface: apps/evaluations/services.py, apps/evaluations/tests/**.
+- T3 [done, worker mwe1like-2-2mww, 34 tests GREEN] Pure calculation services and tests. S2, S4. Surface: apps/evaluations/services.py, apps/evaluations/tests/**.
 - T4 [pending T2,T3] Evaluation models + D02, E1-E5 with HTMX autosave. S5.
 - T5 [pending T4] D01, H01-H03, duplicate, delete draft. S5.
 - T6 [pending T4] C01 compare, X01 PDF/CSV export. S5.
@@ -25,3 +25,6 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - L2 (user) "ordenales, tu eres el orchestador" — orchestrator dispatches T2 and T3 to the two peer sessions.
 - L3 Figma not reachable (JS-rendered, no API token/MCP). T1 visual fidelity blocked until user provides access or PNG exports in doc/figma/.
 - L4 (user) "ya exporté cada frame para q puedas verlo en la carpeta de doc/design/". 3 canvases split into 29 frames at 1x in doc/design/frames/ (auth frames renamed A01/A02-*/A03). Cross-session messaging unavailable: handoffs written to odd/handoff/.
+- L5 (user) "hazlo y a darle con todo al proyecto, hay qcorregir al maximo para q sea perfectamente igual a lo q documentamos y al figma". Decision: add UppercaseDigitValidator so "Mín. 8 caracteres, una mayúscula y un número" is enforced.
+- L6 T1 auth part done (24 accounts tests GREEN, visual diff vs frames). Found and fixed: verification attempts rolled back by @transaction.atomic (unlimited guesses), no AUTH_PASSWORD_VALIDATORS, no 60 s resend cooldown, reset form revealed accounts. Peer sessions never picked up T2/T3 -> reassigned to background workers mwe1lijy-1-59lz (T2) and mwe1like-2-2mww (T3).
+- L7 Catalog data decisions (orchestrator, reversible, pending user confirmation): Soporte default scope = interno (thesis Table 5.4 marks it either; only concrete value is the §6.3 example); scopes identical in v1 and v2; Apoyo=1/Actitud=2 per §4.2; Documentación merged line split; names per §4.2. Commit 189b92e = T1 auth part. Open conflict: Figma AD01 shows registration approval queue, contradicting §6.1 automatic signup -> decide before T7.

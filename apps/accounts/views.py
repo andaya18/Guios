@@ -11,6 +11,8 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 
+from apps.evaluations.selectors import decisor_dashboard
+
 from .forms import (
     GuiosPasswordResetForm,
     GuiosSetPasswordForm,
@@ -50,7 +52,9 @@ class AccountLoginView(LoginView):
 
 @login_required
 def dashboard(request):
-    return render(request, "accounts/dashboard.html")
+    if request.user.role == "administrador":
+        return redirect("/gestion/")
+    return render(request, "dashboard/decisor.html", {"summary": decisor_dashboard(request.user)})
 
 
 def signup(request):

@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from .models import Organization, PendingSignup, User
@@ -84,9 +85,12 @@ def verify_pending_signup(pending, code):
     if pending.attempts >= MAX_VERIFICATION_ATTEMPTS:
         raise ValueError("Superaste el máximo de intentos. Solicita un código nuevo.")
 
-    # The attempt is persisted outside any transaction so a wrong code can never roll it back.
-    pending.attempts += 1
-    pending.save(update_fields=["attempts"])
+    # Counted atomically in the database and outside any transaction, so neither concurrent
+    # requests nor a wrong-code rollback can skip the limit.
+    PendingSignup.objects.filter(pk=pending.pk).update(attempts=F("attempts") + 1)
+    pending.refresh_from_db(fields=["attempts"])
+    if pending.attempts > MAX_VERIFICATION_ATTEMPTS:
+        raise ValueError("Superaste el máximo de intentos. Solicita un código nuevo.")
     if not check_password(code, pending.code_hash):
         remaining = MAX_VERIFICATION_ATTEMPTS - pending.attempts
         if not remaining:

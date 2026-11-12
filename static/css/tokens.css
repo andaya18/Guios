@@ -62,3 +62,23 @@
     /* Controls */
     --control-height: 40px;
 }
+
+/* Optional dark mode (§7.1): same semantic tokens, inverted surfaces. */
+[data-theme="dark"] {
+    --color-background: #111113;
+    --color-surface: #1c1c1f;
+    --color-surface-muted: #26262a;
+    --color-surface-disabled: #2a2a2e;
+    --color-illustration: #3a2a22;
+    --color-primary-soft: #3a2519;
+    --color-text: #e4e4e7;
+    --color-text-strong: #fafafa;
+    --color-text-secondary: #c4c4c9;
+    --color-muted: #a1a1aa;
+    --color-subtle: #71717a;
+    --color-border: #2e2e33;
+    --color-border-strong: #3f3f46;
+    --color-error-soft: #3b1515;
+    --color-success-soft: #12301d;
+    color-scheme: dark;
+}

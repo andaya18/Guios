@@ -1,0 +1,6 @@
+<div class="empty">
+    <span class="empty__icon" aria-hidden="true"></span>
+    <p class="empty__title">{{ title }}</p>
+    {% if text %}<p class="empty__text">{{ text }}</p>{% endif %}
+    {% if action_url %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+</div>
