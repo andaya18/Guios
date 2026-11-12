@@ -1,0 +1,12 @@
+{% load static %}
+<aside class="auth-illustration auth-illustration--{{ image|slugify }}" aria-label="GUIOS PRO">
+    <div class="illustration-header">
+        <span class="brand-mark"><span class="brand-symbol" aria-hidden="true">◆</span> GUIOS PRO</span>
+        <span class="brand-caption">Evaluación de software</span>
+    </div>
+    <div class="illustration-message">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+    </div>
+    <img class="illustration-image" src="{% static image %}" alt="">
+</aside>

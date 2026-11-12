@@ -1,0 +1,13 @@
+{% extends "base/auth.html" %}
+{% block title %}Inicio · GUIOS PRO{% endblock %}
+{% block content %}
+<div class="auth-form">
+    <p class="eyebrow">Panel del decisor</p>
+    <h1>Hola, {{ request.user.first_name }}</h1>
+    <p class="supporting-text">La estructura base está lista para continuar con el módulo de evaluaciones.</p>
+    <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button class="button button-primary" type="submit">Cerrar sesión</button>
+    </form>
+</div>
+{% endblock %}

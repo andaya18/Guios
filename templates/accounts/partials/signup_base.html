@@ -1,0 +1,12 @@
+{% extends "base/auth.html" %}
+{% load static %}
+{% block hero_title %}Decide la adopción de software con evidencia, no con intuición.{% endblock %}
+{% block hero_points %}
+<li>Usa tu correo institucional y comienza tus evaluaciones</li>
+<li>Analiza factores y subfactores relevantes</li>
+<li>Obtén resultados que respalden tu decisión</li>
+{% endblock %}
+{% block hero_class %}auth-hero--compact auth-hero--emphasis{% endblock %}
+{% block main_class %}auth-main--pinned{% endblock %}
+{% block auth_top %}172{% endblock %}
+{% block hero_image %}<div class="auth-hero__art auth-hero__art--signup"><img src="{% static 'robot.jpg' %}" alt=""></div>{% endblock %}

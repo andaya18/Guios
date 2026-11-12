@@ -1,0 +1,25 @@
+{% extends "base/document.html" %}
+{% load static %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/layouts/auth.css' %}">{% endblock %}
+{% block body %}
+<div class="auth">
+    <aside class="auth-hero {% block hero_class %}{% endblock %}" aria-label="GUIOS PRO">
+        {% include "components/brand.html" %}
+        <div class="auth-hero__body">
+            <h2 class="auth-hero__title">{% block hero_title %}Comienza a evaluar software con un proceso claro y estructurado.{% endblock %}</h2>
+            <ul class="auth-hero__points">
+                {% block hero_points %}
+                <li>18 factores y 61 subfactores de la guía GUIOS</li>
+                <li>Avance guardado automáticamente</li>
+                <li>Historial, comparación y exportación</li>
+                {% endblock %}
+            </ul>
+        </div>
+        {% block hero_image %}{% endblock %}
+    </aside>
+    <main class="auth-main {% block main_class %}{% endblock %}" style="--auth-top: {% block auth_top %}0{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% block overlay %}{% endblock %}
+{% endblock %}

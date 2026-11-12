@@ -1,0 +1,74 @@
+{% extends "accounts/partials/signup_base.html" %}
+{% block title %}Crear cuenta · GUIOS PRO{% endblock %}
+{% block content %}
+<div class="auth-form auth-form--emphasis"{% if verification_form %} aria-hidden="true" inert{% endif %}>
+    <h1 class="auth-form__title">Crear cuenta</h1>
+    <p class="auth-form__subtitle">¡Empieza a tomar decisiones con evidencia!</p>
+    <form method="post" action="{% url 'accounts:signup' %}" novalidate>
+        {% csrf_token %}
+        <div class="form-row">
+            {% include "components/field.html" with field=form.first_name %}
+            {% include "components/field.html" with field=form.last_name %}
+        </div>
+        {% include "components/field.html" with field=form.email %}
+        <div class="form-row form-row--hinted">
+            {% include "components/field.html" with field=form.password %}
+            {% include "components/field.html" with field=form.password_confirm %}
+        </div>
+        <span class="field__help field__help--block">Mín. 8 caracteres, una mayúscula y un número</span>
+        <button class="button button--primary button--block" type="submit">Crear cuenta</button>
+    </form>
+    <p class="auth-form__footer auth-form__footer--spaced">¿Ya tienes cuenta? <a class="link link--accent" href="{% url 'accounts:login' %}">Iniciar sesión</a></p>
+</div>
+{% endblock %}
+{% block overlay %}
+{% if verification_form %}
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="verify-title">
+    <div class="modal__dialog">
+        <div class="modal__icon">{% include "components/icon.html" with name="mail" %}</div>
+        <h2 class="modal__title" id="verify-title">Verifica tu correo</h2>
+        <p class="modal__text">Hemos enviado un código de verificación a tu correo institucional.</p>
+        <p class="modal__highlight">{{ pending_email }}</p>
+        <form method="post" action="{% url 'accounts:signup_verify' %}" novalidate>
+            {% csrf_token %}
+            <div class="field{% if verification_form.errors %} field--invalid{% endif %}">
+                <span class="field__label" id="code-label">Código de verificación</span>
+                <div class="otp" role="group" aria-labelledby="code-label" data-otp>
+                    {% for index in "123456" %}
+                    <input name="code" inputmode="numeric" maxlength="1" autocomplete="{% if forloop.first %}one-time-code{% else %}off{% endif %}" aria-label="Dígito {{ index }}"{% if forloop.first %} autofocus{% endif %}>
+                    {% endfor %}
+                </div>
+                {{ verification_form.code.errors }}
+            </div>
+            <button class="button button--primary button--block" type="submit">Verificar correo</button>
+            <p class="modal__footer">¿No recibiste el código? <button class="button button--link" type="submit" name="resend" value="1">Reenviar código</button></p>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if verification_form %}
+<script>
+(() => {
+    const boxes = [...document.querySelectorAll("[data-otp] input")];
+    boxes.forEach((box, index) => {
+        box.addEventListener("input", () => {
+            box.value = box.value.replace(/\D/g, "").slice(-1);
+            if (box.value && boxes[index + 1]) boxes[index + 1].focus();
+        });
+        box.addEventListener("keydown", (event) => {
+            if (event.key === "Backspace" && !box.value && boxes[index - 1]) boxes[index - 1].focus();
+        });
+        box.addEventListener("paste", (event) => {
+            const digits = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, boxes.length);
+            if (!digits) return;
+            event.preventDefault();
+            [...digits].forEach((digit, offset) => { if (boxes[offset]) boxes[offset].value = digit; });
+            boxes[Math.min(digits.length, boxes.length) - 1].focus();
+        });
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

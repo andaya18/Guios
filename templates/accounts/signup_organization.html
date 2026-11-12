@@ -1,0 +1,26 @@
+{% extends "accounts/partials/signup_base.html" %}
+{% block title %}Registra tu organización · GUIOS PRO{% endblock %}
+{% load static %}
+{% block auth_top %}142{% endblock %}
+{% block hero_image %}<div class="auth-hero__art auth-hero__art--signup auth-hero__art--small"><img src="{% static 'robot.jpg' %}" alt=""></div>{% endblock %}
+{% block content %}
+<div class="auth-form auth-form--emphasis">
+    <h1 class="auth-form__title">Registra tu organización</h1>
+    <p class="auth-form__subtitle">No encontramos una organización asociada a tu dominio.<br>Registra los datos de tu organización para continuar.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert--error form-errors">{{ form.non_field_errors.0 }}</div>{% endif %}
+        <div class="field">
+            <label class="field__label" for="org-domain">Dominio institucional</label>
+            <div class="field__control">
+                <input id="org-domain" type="text" value="{{ domain }}" readonly>
+                {% include "components/icon.html" with name="lock" %}
+            </div>
+            <span class="field__help">Detectado automáticamente a partir de tu correo. No se puede modificar.</span>
+        </div>
+        {% include "components/field.html" with field=form.name %}
+        {% include "components/field.html" with field=form.sector icon="chevron-down" %}
+        <button class="button button--primary button--block" type="submit">Continuar</button>
+    </form>
+</div>
+{% endblock %}

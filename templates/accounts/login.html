@@ -1,0 +1,21 @@
+{% extends "base/auth.html" %}
+{% block title %}Iniciar sesión · GUIOS PRO{% endblock %}
+{% block content %}
+<div class="auth-form">
+    <h1 class="auth-form__title">Iniciar sesión</h1>
+    <p class="auth-form__subtitle">Ingresa con tu correo registrado.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert--error form-errors">{{ form.non_field_errors.0 }}</div>{% endif %}
+        {% include "components/field.html" with field=form.username %}
+        {% include "components/field.html" with field=form.password %}
+        <div class="auth-form__options">
+            <label class="checkbox">{{ form.remember }} {{ form.remember.label }}</label>
+            <a class="link" href="{% url 'accounts:password_reset' %}">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="button button--primary button--block" type="submit">Iniciar sesión</button>
+    </form>
+    <div class="divider auth-form__divider">o</div>
+    <p class="auth-form__footer">¿No tienes cuenta? <a class="link link--accent" href="{% url 'accounts:signup' %}">Crear cuenta</a></p>
+</div>
+{% endblock %}

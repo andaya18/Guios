@@ -1,0 +1,72 @@
+/* Access screens (A01-A03): illustrated card on the left, centered form on the right. */
+.auth {
+    display: grid;
+    grid-template-columns: minmax(0, 620fr) minmax(0, 796fr);
+    gap: var(--space-6);
+    min-height: 100vh;
+    padding: var(--space-5) var(--space-6);
+}
+
+.auth-hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: var(--space-12);
+    border-radius: var(--radius-2xl);
+    background: var(--color-illustration);
+}
+.auth-hero__body { margin-top: clamp(64px, 18vh, 156px); }
+.auth-hero__title { max-width: 490px; color: var(--color-text-strong); font-size: var(--text-display); font-weight: var(--weight-semibold); line-height: 1.4; letter-spacing: -.01em; }
+.auth-hero__points { display: grid; gap: var(--space-2); margin-top: var(--space-6); color: var(--color-muted); font-size: var(--text-md); }
+.auth-hero__points li::before { content: "— "; }
+
+/* The illustrations ship with wide white margins: crop them to the artwork, blend the white away. */
+.auth-hero__art { position: relative; flex: none; width: min(var(--art-display), 92%, var(--art-max-height) * var(--art-ratio)); margin: auto auto var(--art-bottom, -32px); overflow: hidden; aspect-ratio: var(--art-ratio); }
+.auth-hero__art img { position: absolute; top: var(--art-top); left: var(--art-left); width: var(--art-scale); max-width: none; mix-blend-mode: multiply; }
+.auth-hero__art--signup { --art-display: 435px; --art-max-height: 44vh; --art-ratio: 1310 / 1300; --art-scale: 193.13%; --art-left: -38.93%; --art-top: -13.13%; }
+.auth-hero__art--small { --art-display: 300px; --art-bottom: 0px; }
+.auth-hero__art--recover { --art-display: 375px; --art-max-height: 46vh; --art-ratio: 1516 / 1708; --art-scale: 149.87%; --art-left: -22.16%; --art-top: 0%; --art-bottom: 32px; }
+
+/* Some frames set the headline higher in the card; signup frames also use a larger, bolder one. */
+.auth-hero--compact .auth-hero__body { margin-top: clamp(40px, 12vh, 108px); }
+.auth-hero--emphasis .auth-hero__title { max-width: 400px; font-size: 32px; font-weight: var(--weight-bold); line-height: 1.32; }
+
+/* The form is centered; frames that pin it higher declare their Figma top (px at 900px tall). */
+.auth-main { display: grid; place-items: center; padding: var(--space-8) 0; }
+.auth-main--pinned { place-items: start center; padding-top: max(var(--space-8), calc(var(--auth-top) * 100vh / 900)); }
+.auth-form { width: min(420px, 100%); }
+.auth-form__back { margin-bottom: var(--space-5); }
+.auth-form__title { color: var(--color-text-strong); font-size: var(--text-xl); font-weight: var(--weight-semibold); line-height: 1.3; }
+.auth-form__subtitle { margin: var(--space-4) 0 var(--space-5); color: var(--color-muted); font-size: var(--text-md); line-height: 1.45; }
+.auth-form__options { display: flex; align-items: center; justify-content: space-between; margin: calc(var(--space-1) * -1) 0 var(--space-4); }
+.auth-form__divider { margin: var(--space-6) 0 var(--space-4); }
+.auth-form__footer { color: var(--color-muted); font-size: var(--text-md); text-align: center; }
+.auth-form__footer--spaced { margin-top: var(--space-6); }
+.auth-form__notice { margin-top: var(--space-4); }
+.auth-form__card { margin-top: var(--space-6); }
+
+/* Signup and organization frames use taller controls and bolder headings. */
+.auth-form--emphasis { --control-height: 44px; }
+.auth-form--emphasis .auth-form__title { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.auth-form--emphasis .auth-form__subtitle { margin: var(--space-2) 0 var(--space-6); font-size: var(--text-sm); color: var(--color-text-secondary); }
+.auth-form--emphasis .button--primary { font-weight: var(--weight-semibold); }
+.auth-form--emphasis .field { gap: var(--space-2); }
+.auth-form--emphasis .field input:not([type="checkbox"]),
+.auth-form--emphasis .field select { border-color: var(--color-border); }
+
+@media (max-width: 960px) {
+    .auth { grid-template-columns: 1fr; padding: var(--space-4); }
+    .auth-hero { padding: var(--space-8) var(--space-6); }
+    .auth-hero__body { margin-top: var(--space-10); }
+    .auth-hero__title { font-size: var(--text-2xl); }
+    .auth-hero__art { width: min(300px, 80%); margin-top: var(--space-6); }
+    .auth-main--pinned { place-items: center; padding-top: var(--space-8); }
+}
+
+@media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+    .auth-hero__art { display: none; }
+    .modal__dialog { padding: var(--space-6); }
+    .otp { gap: var(--space-2); }
+}

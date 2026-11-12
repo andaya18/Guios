@@ -1,0 +1,15 @@
+{% extends "base/auth.html" %}
+{% load static %}
+{% block title %}Recuperar contraseña · GUIOS PRO{% endblock %}
+{% block hero_class %}auth-hero--compact{% endblock %}
+{% block main_class %}auth-main--pinned{% endblock %}
+{% block auth_top %}138{% endblock %}
+{% block hero_title %}Recupera el acceso sin perder tus evaluaciones.{% endblock %}
+{% block hero_image %}<div class="auth-hero__art auth-hero__art--recover"><img src="{% static 'robot_recuperar-contraseña.jpg' %}" alt=""></div>{% endblock %}
+{% block content %}
+<div class="auth-form">
+    <a class="link link--back auth-form__back" href="{% url 'accounts:login' %}">{% include "components/icon.html" with name="arrow-left" %}Volver a iniciar sesión</a>
+    <h1 class="auth-form__title">Recuperar contraseña</h1>
+    {% block recover_body %}{% endblock %}
+</div>
+{% endblock %}
