@@ -1,12 +1,12 @@
 {% extends "evaluations/partials/stage_base.html" %}
-{% load ui %}
+{% load ui l10n %}
 {% block title %}Etapa 2 · {{ evaluation.software }} · GUIOS PRO{% endblock %}
 {% block stage %}
 {% csrf_token %}
 <div class="weighting">
     <aside class="panel weighting__list" aria-label="Factores relevantes">
         <header class="weighting__list-head"><h2 class="panel__title">Factores relevantes</h2><span>{{ factors|length }}</span></header>
-        <div class="progress weighting__list-progress"><div class="progress__bar" style="width: {{ overall_progress }}%"></div></div>
+        <div class="progress weighting__list-progress"><div class="progress__bar" style="width: {{ overall_progress|unlocalize }}%"></div></div>
         <ul class="factor-nav">
             {% for item in factors %}
             <li><a class="factor-nav__item{% if item.is_current %} is-current{% endif %}" href="{{ item.url }}"{% if item.is_current %} aria-current="true"{% endif %} id="nav-{{ item.pk }}">

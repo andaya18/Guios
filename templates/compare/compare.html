@@ -1,0 +1,97 @@
+{% extends "base_decisor.html" %}
+{% load static ui l10n %}
+{% block title %}Comparar · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/evaluation.css' %}"><link rel="stylesheet" href="{% static 'css/pages/compare.css' %}">{% endblock %}
+{% block topbar_title %}Comparar{% endblock %}
+{% block topbar_subtitle %}Evaluaciones / Comparar{% endblock %}
+{% block content %}
+<header class="page__header">
+    <h1 class="page__title">Comparar evaluaciones</h1>
+    <p class="page__subtitle">Solo evaluaciones finalizadas de tu organización · de 2 a 4.</p>
+</header>
+
+<form class="panel compare-bar" method="get" data-compare-bar>
+    <span class="compare-bar__label">Comparando:</span>
+    {% for item in items %}
+    <span class="chip chip--dark compare-bar__chip">{{ item.evaluation.software }} · {{ item.evaluation.finished_at|date:"d/m" }}
+        <input type="hidden" name="ids" value="{{ item.evaluation.pk }}">
+        <a class="compare-bar__remove" href="?{{ item.remove_query }}" aria-label="Quitar {{ item.evaluation.software }}">{% include "components/icon.html" with name="x" %}</a>
+    </span>
+    {% endfor %}
+    {% if candidates and items|length < 4 %}
+    <label class="compare-bar__add">
+        <span class="sr-only">Agregar evaluación</span>
+        <select name="ids" data-autosubmit-select>
+            <option value="">+ Agregar evaluación</option>
+            {% for candidate in candidates %}<option value="{{ candidate.pk }}">{{ candidate.software }} · {{ candidate.finished_at|short_date }} · {{ candidate.author.get_full_name }}</option>{% endfor %}
+        </select>
+    </label>
+    {% endif %}
+    {% if items|length >= 2 %}
+    <label class="checkbox compare-bar__filter"><input type="checkbox" data-only-differences> Mostrar solo diferencias de FODA</label>
+    {% endif %}
+</form>
+
+{% if items|length < 2 %}
+<section class="panel">{% include "components/empty.html" with title="Elige al menos dos evaluaciones" text="Marca de 2 a 4 evaluaciones finalizadas en el historial o agrégalas con el selector de arriba." action_url="/historial/" action_label="Ir al historial" %}</section>
+{% elif version_mismatch %}
+<div class="alert alert--warning" role="alert">{% include "components/icon.html" with name="alert" %}<p>{{ version_mismatch }}</p></div>
+{% else %}
+<div class="alert compare-result{% if not is_tie %} compare-result--winner{% endif %}" role="status">
+    {% include "components/icon.html" with name="info" %}
+    <p>{{ result_message }}</p>
+</div>
+
+<div class="compare-cards" style="--columns: {{ items|length }}">
+    {% for item in items %}
+    <article class="panel compare-card{% if item.is_best and not is_tie %} is-best{% endif %}">
+        <span class="letter letter--tile">{{ item.letter }}</span>
+        <div>
+            <h2 class="compare-card__name">{{ item.evaluation.software }}</h2>
+            <p class="compare-card__meta">{{ item.letter|recommendation_name }} · {{ item.foda_summary }}</p>
+            <p class="compare-card__meta">{{ item.position }}.º · {{ item.evaluation.author.get_full_name }} · {{ item.evaluation.finished_at|short_date }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<div class="compare-grid" data-compare-scope>
+    <section class="panel compare-chart">
+        <header class="panel__header">
+            <h2 class="panel__title">PM por factor</h2>
+            <span class="compare-chart__legend">{% for item in items %}<span class="compare-chart__key compare-chart__key--{{ forloop.counter }}">{{ item.short_name }}</span>{% endfor %}</span>
+        </header>
+        <div class="bars" role="img" aria-label="Ponderación media por factor de cada evaluación">
+            <span class="bars__threshold" aria-hidden="true"></span>
+            {% for row in rows %}
+            <div class="bars__group" {% if not row.foda_differs %}data-same{% endif %}>
+                <div class="bars__columns">{% for cell in row.cells %}<span class="bars__bar bars__bar--{{ forloop.counter }}" style="height: {{ cell.height|unlocalize }}%" title="{{ cell.pm|pm|default:'No evaluado' }}"></span>{% endfor %}</div>
+                <span class="bars__label">{{ row.short_name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="compare-chart__note">Línea discontinua: corte PM = 3{% for note in chart_notes %} · {{ note }}{% endfor %}</p>
+    </section>
+
+    <section class="panel compare-table">
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>Factor</th>{% for item in items %}<th>{{ item.evaluation.software }}</th>{% endfor %}{% if show_difference %}<th>Diferencia</th>{% endif %}</tr></thead>
+                <tbody>
+                {% for row in rows %}
+                <tr {% if not row.foda_differs %}data-same{% endif %}>
+                    <td>{{ row.name }}</td>
+                    {% for cell in row.cells %}
+                    <td>{% if cell.relevant %}<span class="compare-table__cell">{{ cell.pm|pm }} <span class="pill {% if cell.is_problem %}pill--dark{% else %}pill--success{% endif %}">{{ cell.foda }}</span></span>{% else %}<span class="compare-table__muted">No evaluado</span>{% endif %}</td>
+                    {% endfor %}
+                    {% if show_difference %}<td>{{ row.difference|default:"—" }}</td>{% endif %}
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endif %}
+{% endblock %}
+{% block page_scripts %}<script src="{% static 'js/compare.js' %}" defer></script>{% endblock %}

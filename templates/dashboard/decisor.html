@@ -1,5 +1,5 @@
 {% extends "base_decisor.html" %}
-{% load static ui %}
+{% load static ui l10n %}
 {% block title %}Panel de inicio · GUIOS PRO{% endblock %}
 {% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}">{% endblock %}
 {% block content %}
@@ -46,7 +46,7 @@
             <p class="resume__label">Continúa donde lo dejaste</p>
             <p class="resume__name">{{ resume.software }}</p>
             <p class="resume__step">{{ resume.step_label }}</p>
-            <div class="progress" role="progressbar" aria-valuenow="{{ resume.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress__bar" style="width: {{ resume.progress }}%"></div></div>
+            <div class="progress" role="progressbar" aria-valuenow="{{ resume.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress__bar" style="width: {{ resume.progress|unlocalize }}%"></div></div>
         </div>
         <span class="resume__edited">Editado hace {{ resume.updated_at|ago_short }}</span>
         <a class="button button--primary" href="{{ resume.url }}">Continuar evaluación</a>
@@ -89,7 +89,7 @@
                 {% for row in summary.by_letter %}
                 <div class="summary__row">
                     <p class="summary__head"><span class="letter">{{ row.letter }}</span>{{ row.label }}<span class="summary__count">{{ row.count }}</span></p>
-                    <div class="progress"><div class="progress__bar{% if not row.is_top %} progress__bar--muted{% endif %}" style="width: {{ row.percent }}%"></div></div>
+                    <div class="progress"><div class="progress__bar{% if not row.is_top %} progress__bar--muted{% endif %}" style="width: {{ row.percent|unlocalize }}%"></div></div>
                 </div>
                 {% endfor %}
             </div>
