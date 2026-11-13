@@ -1,0 +1,65 @@
+{% extends "base_decisor.html" %}
+{% load static ui %}
+{% block title %}{{ evaluation.software }} · Historial · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/evaluation.css' %}"><link rel="stylesheet" href="{% static 'css/pages/history.css' %}">{% endblock %}
+{% block topbar_title %}Detalle de evaluación{% endblock %}
+{% block topbar_subtitle %}Evaluaciones / Historial / {{ evaluation.software }}{% endblock %}
+{% block content %}
+<a class="link link--back page__back" href="/historial/">{% include "components/icon.html" with name="arrow-left" %}Historial</a>
+<header class="detail-header">
+    <div>
+        <h1 class="page__title detail-header__title">{{ evaluation.software }}
+            {% if evaluation.status == "finalizada" %}<span class="pill pill--success">Finalizada</span>{% else %}<span class="pill pill--pending">Borrador · Etapa {{ evaluation.current_step }}</span>{% endif %}
+        </h1>
+        <p class="page__subtitle">Evaluado por {{ evaluation.author.get_full_name }} · {% if evaluation.finished_at %}{{ evaluation.finished_at|short_date }}{% else %}{{ evaluation.updated_at|short_date }}{% endif %} · Catálogo v{{ evaluation.catalog_version.number }} · Licencia: {{ evaluation.software.get_license_type_display|lower }}</p>
+    </div>
+    <div class="detail-header__actions">
+        {% if evaluation.status == "finalizada" %}
+        <a class="button button--secondary" href="/comparar/?ids={{ evaluation.pk }}">Comparar</a>
+        <form method="post" action="{% url 'history:duplicate' evaluation.pk %}">{% csrf_token %}<button class="button button--secondary" type="submit">Duplicar para reevaluar</button></form>
+        <button class="button button--primary" type="button" data-open-modal="export-modal">Exportar</button>
+        {% elif is_own_draft %}
+        <button class="button button--secondary" type="button" data-open-modal="delete-modal" data-delete-url="{% url 'history:delete' evaluation.pk %}" data-delete-name="{{ evaluation.software }}" data-delete-date="{{ evaluation.updated_at|short_date }}">Eliminar borrador</button>
+        <a class="button button--primary" href="{{ resume_url }}">Continuar</a>
+        {% endif %}
+    </div>
+</header>
+
+{% if warning %}<div class="alert alert--warning form-notice">{% include "components/icon.html" with name="alert" %}<p>{{ warning }}</p></div>{% endif %}
+
+{% if result %}
+{% include "evaluations/partials/results.html" %}
+{% else %}
+<section class="panel">{% include "components/empty.html" with title="Este borrador aún no tiene resultados" text="Completa las etapas 1 y 2 para ver la recomendación." %}</section>
+{% endif %}
+
+<details class="panel stage-review">
+    <summary class="stage-review__summary">
+        <span>Etapa 1 · Importancia asignada a los 18 factores</span>
+        <span class="stage-review__hint">Solo lectura</span>
+        <span class="button button--secondary button--sm stage-review__toggle"></span>
+    </summary>
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Factor</th><th>Importancia sugerida</th><th>Tu importancia</th><th>Importancia relativa</th><th>Alcance</th><th>Estado</th></tr></thead>
+            <tbody>
+            {% for row in stage1_rows %}
+            <tr>
+                <td>{{ row.factor.name }}</td>
+                <td>{{ row.suggested_importance|importance }}</td>
+                <td>{{ row.decision_importance|importance|default:"—" }}</td>
+                <td>{{ row.relative_importance|importance|default:"—" }}</td>
+                <td>{{ row.scope|scope_label }}</td>
+                <td>{% if row.is_relevant %}<span class="pill pill--success">Relevante</span>{% elif row.decision_importance %}<span class="pill pill--neutral">Descartado</span>{% else %}<span class="pill pill--pending">Pendiente</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endblock %}
+{% block modals %}
+{% include "history/partials/delete_modal.html" %}
+{% include "history/partials/export_modal.html" with export_url=export_url export_label=export_label %}
+{% endblock %}
+{% block page_scripts %}<script src="{% static 'js/evaluation.js' %}" defer></script><script src="{% static 'js/history.js' %}" defer></script>{% endblock %}
