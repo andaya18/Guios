@@ -72,3 +72,13 @@ def scope_label(value):
 def recommendation_title(letter):
     """Full name of a recommendation letter (§4.7), e.g. 'Analizar y posponer la adopción'."""
     return {"A": "Adoptar", "B": "Adoptar con matices", "C": "Analizar y posponer la adopción"}.get(letter, "")
+
+
+@register.filter
+def saved_at(value):
+    """'hoy 00:41' when it is today, otherwise '03/10/2026 00:41'."""
+    if not value:
+        return ""
+    local = timezone.localtime(value)
+    day = "hoy" if local.date() == timezone.localdate() else date_format(local, "d/m/Y")
+    return f"{day} {date_format(local, 'H:i')}"

@@ -17,10 +17,25 @@
         status.classList.toggle("is-error", isError);
     };
     document.body.addEventListener("htmx:beforeRequest", () => setStatus("Guardando…", false));
+    const toast = document.querySelector("[data-offline-toast]");
+    let failed = null;
     document.body.addEventListener("htmx:afterRequest", (event) => {
-        // Failed saves keep the user's choice on screen and say so (§6.4).
-        if (event.detail.successful) setStatus("Guardado automáticamente hace un momento", false);
-        else setStatus("No se pudo guardar. Revisa tu conexión.", true);
+        // Failed saves keep the user's choice on screen and say so (§6.4, G02).
+        if (event.detail.successful) {
+            setStatus("Guardado automáticamente hace un momento", false);
+            if (toast) toast.hidden = true;
+            return;
+        }
+        if (event.detail.xhr.status === 401) {
+            document.getElementById("session-modal")?.removeAttribute("hidden");
+            return;
+        }
+        failed = event.detail.elt;
+        setStatus("No se pudo guardar", true);
+        if (toast) toast.hidden = false;
+    });
+    document.querySelector("[data-retry]")?.addEventListener("click", () => {
+        if (failed && window.htmx) window.htmx.trigger(failed, "change");
     });
     document.body.addEventListener("htmx:configRequest", (event) => {
         const token = document.querySelector("[name=csrfmiddlewaretoken]");

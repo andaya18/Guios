@@ -1,18 +1,18 @@
-{% load ui %}<tr id="factor-{{ row.pk }}" class="{% if row.decision_importance and not row.is_relevant %}is-discarded{% endif %}"
-    hx-post="{% url 'evaluations:factor' evaluation.pk row.pk %}" hx-trigger="change" hx-target="this" hx-swap="outerHTML" hx-include="this">
+{% load ui %}<tr id="factor-{{ row.factor_id }}" class="{% if row.decision_importance and not row.is_relevant %}is-discarded{% endif %}"
+    hx-post="{% url 'evaluations:factor' evaluation.pk row.factor_id %}" hx-trigger="change" hx-target="this" hx-swap="outerHTML" hx-include="this">
     <td><span class="factor-name">{{ row.factor.name }}<span title="{{ row.factor.description|default:row.factor.name }}">{% include "components/icon.html" with name="info" %}</span></span></td>
     <td><span class="pill pill--neutral">{{ row.suggested_importance|importance }}</span></td>
     <td>
         <fieldset class="segmented" aria-label="Tu importancia para {{ row.factor.name }}">
             {% for value, label in scale %}
-            <input type="radio" id="factor-{{ row.pk }}-importance-{{ value }}" name="factor-{{ row.pk }}-decision_importance" value="{{ value }}"{% if row.decision_importance == value %} checked{% endif %}>
-            <label for="factor-{{ row.pk }}-importance-{{ value }}">{{ value }} {{ label }}</label>
+            <input type="radio" id="factor-{{ row.factor_id }}-importance-{{ value }}" name="factor-{{ row.factor_id }}-decision_importance" value="{{ value }}"{% if row.decision_importance == value %} checked{% endif %}>
+            <label for="factor-{{ row.factor_id }}-importance-{{ value }}">{{ value }} {{ label }}</label>
             {% endfor %}
         </fieldset>
     </td>
     <td>{% if row.relative_importance %}{{ row.relative_importance|importance }}{% else %}—{% endif %}</td>
     <td>
-        <select class="scope-select" name="factor-{{ row.pk }}-scope" aria-label="Alcance de {{ row.factor.name }}">
+        <select class="scope-select" name="factor-{{ row.factor_id }}-scope" aria-label="Alcance de {{ row.factor.name }}">
             <option value="interno"{% if row.scope == "interno" %} selected{% endif %}>Interno</option>
             <option value="externo"{% if row.scope == "externo" %} selected{% endif %}>Externo</option>
         </select>

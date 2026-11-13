@@ -8,6 +8,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("ayuda/", help_guide, name="help"),
     path("gestion/", include("apps.management.urls")),
+    path("evaluaciones/", include("apps.evaluations.urls")),
+    path("historial/", include("apps.evaluations.urls_history")),
     path("", include("apps.accounts.urls")),
 ]
 

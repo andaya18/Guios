@@ -1,0 +1,12 @@
+<div class="modal" id="session-modal" role="alertdialog" aria-modal="true" aria-labelledby="session-title" hidden>
+    <div class="modal__dialog">
+        <div class="modal__icon" aria-hidden="true"></div>
+        <h2 class="modal__title" id="session-title">Tu sesión expiró</h2>
+        <p class="modal__text">Por seguridad cerramos tu sesión tras 30 minutos de inactividad. Tu avance quedó guardado.</p>
+        <a class="button button--primary button--block modal__cta" href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">Iniciar sesión de nuevo</a>
+    </div>
+</div>
+<div class="toast" data-offline-toast role="alert" hidden>
+    <span>Sin conexión. No se pudo guardar el último cambio.</span>
+    <button class="toast__action" type="button" data-retry>Reintentar</button>
+</div>
