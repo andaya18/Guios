@@ -167,3 +167,96 @@ def result_view(evaluation):
         discarded_count=total_factors - len(rows),
         problem_count=data["problem_count"],
     )
+
+
+# ---------- C01 ----------
+
+MAX_COMPARED = 4
+SHORT_NAMES = {
+    "Compatibilidad": "Comp.", "Fiabilidad": "Fiab.", "Mantenibilidad": "Mant.", "Personalización": "Pers.",
+    "Prueba": "Prueba", "Documentación": "Doc.", "Portabilidad": "Port.", "Reusabilidad": "Reus.",
+    "Usabilidad": "Usab.", "Apoyo de la alta dirección": "Apoyo", "Formación": "Form.", "Soporte": "Sop.",
+    "Actitud hacia el cambio": "Act.", "Bloqueo de proveedores": "Bloq.", "Casos de estudio de adopción FLOSS": "Casos",
+    "Centralidad de las TI": "Cent.", "Tiempo de adopción": "Tiempo", "Coste total de propiedad (TCO)": "TCO",
+}
+
+
+@dataclass
+class _Ranked:
+    """Adapter with the attribute names services.comparar expects."""
+    evaluation: object
+    recomendacion: str
+    num_problemas: int
+
+
+def _signed(value):
+    text = services.formatear_pm(abs(value))
+    return f"+{text}" if value > 0 else (f"−{text}" if value < 0 else text)
+
+
+def compare(evaluations):
+    """Side-by-side data ranked by §4.9 rules. Callers guarantee same organization and version."""
+    ranked_input = [
+        _Ranked(evaluation, evaluation.recommendation,
+                evaluation.factors.filter(foda__in=("Debilidad", "Amenaza")).count())
+        for evaluation in evaluations
+    ]
+    ordered, best = services.comparar(ranked_input)
+    best_ids = {item.evaluation.pk for item in best}
+    position, previous_key = 0, None
+    positions = {}
+    for item in ordered:
+        key = services.clave_comparacion(item)
+        if key != previous_key:
+            position, previous_key = position + 1, key
+        positions[item.evaluation.pk] = position
+
+    by_eval = {
+        evaluation.pk: {row.factor_id: row for row in evaluation.factors.select_related("factor")}
+        for evaluation in evaluations
+    }
+    items = []
+    for evaluation in evaluations:
+        counts = {key: sum(1 for row in by_eval[evaluation.pk].values() if row.foda == key) for key, _, _ in FODA_ORDER}
+        items.append({
+            "evaluation": evaluation,
+            "letter": evaluation.recommendation,
+            "foda_summary": f"F {counts['Fortaleza']} · O {counts['Oportunidad']} · D {counts['Debilidad']} · A {counts['Amenaza']}",
+            "position": positions[evaluation.pk],
+            "is_best": evaluation.pk in best_ids,
+            "short_name": evaluation.software.name,
+        })
+
+    rows, notes = [], []
+    first = evaluations[0]
+    for factor_id, base in by_eval[first.pk].items():
+        cells = []
+        for evaluation in evaluations:
+            row = by_eval[evaluation.pk][factor_id]
+            cells.append({
+                "pm": row.pm, "foda": row.foda, "relevant": row.is_relevant,
+                "is_problem": row.foda in ("Debilidad", "Amenaza"),
+                "height": float(row.pm) / 4 * 100 if row.pm is not None else 0,
+            })
+        if not any(cell["relevant"] for cell in cells):
+            continue
+        for evaluation, cell in zip(evaluations, cells):
+            if not cell["relevant"]:
+                notes.append(f"{base.factor.name} no fue relevante en {evaluation.software}")
+        difference = None
+        if len(cells) == 2 and all(cell["pm"] is not None for cell in cells):
+            difference = _signed(cells[1]["pm"] - cells[0]["pm"])
+        rows.append({
+            "name": base.factor.name, "short_name": SHORT_NAMES.get(base.factor.name, base.factor.name[:5]),
+            "cells": cells, "difference": difference,
+            "foda_differs": len({cell["foda"] for cell in cells}) > 1,
+        })
+
+    winner = ordered[0].evaluation
+    is_tie = len(best) > 1
+    message = services.MENSAJE_EMPATE if is_tie else (
+        f"Mejor alternativa: {winner.software} (recomendación {winner.recommendation}). "
+        "Se ordenan por recomendación y luego por menos factores problemáticos."
+    )
+    return {"items": items, "rows": rows, "chart_notes": notes, "is_tie": is_tie,
+            "result_message": message, "show_difference": len(evaluations) == 2}

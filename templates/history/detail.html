@@ -5,7 +5,7 @@
 {% block topbar_title %}Detalle de evaluación{% endblock %}
 {% block topbar_subtitle %}Evaluaciones / Historial / {{ evaluation.software }}{% endblock %}
 {% block content %}
-<a class="link link--back page__back" href="/historial/">{% include "components/icon.html" with name="arrow-left" %}Historial</a>
+<a class="link link--back page__back" href="{% url 'history:list' %}">{% include "components/icon.html" with name="arrow-left" %}Historial</a>
 <header class="detail-header">
     <div>
         <h1 class="page__title detail-header__title">{{ evaluation.software }}
@@ -15,7 +15,7 @@
     </div>
     <div class="detail-header__actions">
         {% if evaluation.status == "finalizada" %}
-        <a class="button button--secondary" href="/comparar/?ids={{ evaluation.pk }}">Comparar</a>
+        <a class="button button--secondary" href="{% url 'compare' %}?ids={{ evaluation.pk }}">Comparar</a>
         <form method="post" action="{% url 'history:duplicate' evaluation.pk %}">{% csrf_token %}<button class="button button--secondary" type="submit">Duplicar para reevaluar</button></form>
         <button class="button button--primary" type="button" data-open-modal="export-modal">Exportar</button>
         {% elif is_own_draft %}

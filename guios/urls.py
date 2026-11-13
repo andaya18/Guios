@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import help_guide
+from apps.evaluations.history_views import compare
 
 
 urlpatterns = [
@@ -10,6 +11,7 @@ urlpatterns = [
     path("gestion/", include("apps.management.urls")),
     path("evaluaciones/", include("apps.evaluations.urls")),
     path("historial/", include("apps.evaluations.urls_history")),
+    path("comparar/", compare, name="compare"),
     path("", include("apps.accounts.urls")),
 ]
 

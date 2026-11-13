@@ -58,7 +58,7 @@
         <section class="panel">
             <header class="panel__header">
                 <h2 class="panel__title">Evaluaciones recientes</h2>
-                <a class="link" href="/historial/">Ver historial</a>
+                <a class="link" href="{% url 'history:list' %}">Ver historial</a>
             </header>
             {% if summary.recent %}
             <div class="table-wrap">

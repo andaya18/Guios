@@ -5,6 +5,7 @@
 {% block topbar_title %}Historial{% endblock %}
 {% block topbar_subtitle %}Evaluaciones / Historial{% endblock %}
 {% block content %}
+{% url 'evaluations:new' as new_url %}
 <header class="page__header">
     <h1 class="page__title">Historial de evaluaciones</h1>
     <p class="page__subtitle">Evaluaciones finalizadas de {{ shell_organization }} y tus borradores.</p>
@@ -30,7 +31,7 @@
     </select>
 </form>
 
-<form method="get" action="/comparar/" data-compare-form>
+<form method="get" action="{% url 'compare' %}" data-compare-form>
     <div class="selection-bar" data-selection-bar hidden>
         <span class="selection-bar__box" aria-hidden="true"></span>
         <strong><span data-selected-count>0</span> seleccionadas</strong>
@@ -87,7 +88,7 @@
             {% if page_obj.paginator.num_pages > 1 %}{% include "components/pagination.html" %}{% endif %}
         </footer>
         {% else %}
-        {% include "components/empty.html" with title="Aún no hay evaluaciones" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url="/evaluaciones/nueva/" action_label="+ Nueva evaluación" %}
+        {% include "components/empty.html" with title="Aún no hay evaluaciones" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url=new_url action_label="+ Nueva evaluación" %}
         {% endif %}
     </section>
 </form>

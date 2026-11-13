@@ -3,13 +3,14 @@
 <section class="nav-section">
     <h2 class="nav-section__title">Principal {% include "components/icon.html" with name="chevron-down" %}</h2>
     <div class="nav-section__items">
+        {% url 'history:list' as history_url %}{% url 'compare' as compare_url %}
         {% include "components/nav_item.html" with href="/" icon="home" label="Panel de inicio" match="/" exact=True %}
-        {% include "components/nav_item.html" with href="/historial/" icon="history" label="Historial" match="/historial/" badge=shell_history_badge %}
-        {% include "components/nav_item.html" with href="/comparar/" icon="compare" label="Comparar" match="/comparar/" %}
+        {% include "components/nav_item.html" with href=history_url icon="history" label="Historial" match="/historial/" badge=shell_history_badge %}
+        {% include "components/nav_item.html" with href=compare_url icon="compare" label="Comparar" match="/comparar/" %}
     </div>
 </section>
 {% endblock %}
 {% block user_meta %}{{ shell_role }} · {{ shell_organization }}{% endblock %}
 {% block topbar_actions %}
-<a class="button button--primary" href="/evaluaciones/nueva/">+ Nueva evaluación</a>
+<a class="button button--primary" href="{% url 'evaluations:new' %}">+ Nueva evaluación</a>
 {% endblock %}
