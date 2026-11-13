@@ -1,0 +1,90 @@
+{% extends shell_base %}
+{% load static %}
+{% block title %}Ayuda · Guía GUIOS · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/help.css' %}">{% endblock %}
+{% block topbar_title %}Ayuda{% endblock %}
+{% block topbar_subtitle %}Ayuda / Guía GUIOS{% endblock %}
+{% block content %}
+<header class="page__header">
+    <h1 class="page__title">Guía GUIOS</h1>
+    <p class="page__subtitle">Cómo funciona la evaluación y qué significa cada resultado.</p>
+</header>
+<div class="help">
+    <nav class="panel help__nav" aria-label="Secciones de la guía">
+        <a class="help__link is-active" href="#como-funciona">Cómo funciona</a>
+        <a class="help__link" href="#escalas">Escalas</a>
+        <a class="help__link" href="#foda">Clasificación FODA</a>
+        <a class="help__link" href="#recomendaciones">Recomendaciones A, B y C</a>
+        <a class="help__link" href="#factores">Los 18 factores</a>
+        <a class="help__link" href="#preguntas">Preguntas frecuentes</a>
+    </nav>
+    <div class="help__content">
+        <section class="panel" id="como-funciona">
+            <h2 class="panel__title help__title">Cómo funciona · 6 pasos en 3 etapas</h2>
+            <div class="help__steps">
+                <article class="help__step"><h3>1. Factores relevantes</h3><p>Pasos 1 y 2: importancia del decisor, importancia relativa y descarte de irrelevantes.</p></article>
+                <article class="help__step"><h3>2. Ponderación</h3><p>Pasos 3 y 4: calificación de subfactores y ponderación media (PM).</p></article>
+                <article class="help__step"><h3>3. Resultado</h3><p>Pasos 5 y 6: clasificación FODA y recomendación.</p></article>
+            </div>
+        </section>
+        <div class="help__pair">
+            <section class="panel" id="escalas">
+                <h2 class="panel__title help__title">Escalas</h2>
+                <table class="table">
+                    <thead><tr><th>Valor</th><th>Importancia</th><th>Cumplimiento</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Irrelevante</td><td>No cumple</td></tr>
+                        <tr><td>2</td><td>Opcional</td><td>No sé</td></tr>
+                        <tr><td>3</td><td>Importante</td><td>Cumple parcialmente</td></tr>
+                        <tr><td>4</td><td>Fundamental</td><td>Cumple el requisito</td></tr>
+                    </tbody>
+                </table>
+            </section>
+            <section class="panel" id="foda">
+                <h2 class="panel__title help__title">Clasificación FODA</h2>
+                <div class="help__foda">
+                    <div class="help__quadrant help__quadrant--positive"><span>PM ≥ 3 · interno</span><strong>Fortaleza</strong></div>
+                    <div class="help__quadrant help__quadrant--negative"><span>PM &lt; 3 · interno</span><strong>Debilidad</strong></div>
+                    <div class="help__quadrant help__quadrant--positive"><span>PM ≥ 3 · externo</span><strong>Oportunidad</strong></div>
+                    <div class="help__quadrant help__quadrant--negative"><span>PM &lt; 3 · externo</span><strong>Amenaza</strong></div>
+                </div>
+            </section>
+        </div>
+        <section class="panel" id="recomendaciones">
+            <h2 class="panel__title help__title">Recomendaciones</h2>
+            <div class="help__letters">
+                <p><span class="letter letter--square">A</span>Adoptar</p>
+                <p><span class="letter letter--square">B</span>Adoptar con matices</p>
+                <p><span class="letter letter--square">C</span>Analizar y posponer la adopción</p>
+            </div>
+        </section>
+        <section class="panel" id="factores">
+            <h2 class="panel__title help__title">Los 18 factores</h2>
+            <div class="help__accordion">
+                {% for dimension in dimensions %}
+                <details class="help__group">
+                    <summary>{{ dimension.name }} · {{ dimension.factors.all|length }} factor{{ dimension.factors.all|length|pluralize:"es" }}</summary>
+                    <ul>
+                        {% for factor in dimension.factors.all %}
+                        <li><details><summary>{{ factor.name }} <small>{{ factor.subfactors.all|length }} subfactor{{ factor.subfactors.all|length|pluralize:"es" }}</small></summary>
+                            <ol>{% for subfactor in factor.subfactors.all %}<li>{{ subfactor.name }}</li>{% endfor %}</ol>
+                        </details></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="panel" id="preguntas">
+            <h2 class="panel__title help__title">Preguntas frecuentes</h2>
+            <div class="help__accordion">
+                <details class="help__group"><summary>¿Cuándo se descarta un factor?</summary><p>Solo cuando su importancia relativa es 1 (Irrelevante). Un factor con importancia sugerida Importante que marcas como Irrelevante queda como Opcional y no se descarta.</p></details>
+                <details class="help__group"><summary>¿Qué pasa si respondo «No sé»?</summary><p>Cuenta como 2 en la ponderación media, igual que cualquier otra respuesta.</p></details>
+                <details class="help__group"><summary>¿Puedo editar una evaluación finalizada?</summary><p>No. Para cambiar algo usa «Duplicar para reevaluar»: se crea un borrador nuevo con las mismas respuestas.</p></details>
+                <details class="help__group"><summary>¿Quién ve mis evaluaciones?</summary><p>Tus borradores solo los ves tú. Las evaluaciones finalizadas las ven todos los usuarios de tu organización.</p></details>
+                <details class="help__group"><summary>¿Sirve para software que no es libre?</summary><p>Sí. La metodología GUIOS fue validada para software libre; en otros tipos de software los resultados son orientativos.</p></details>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+/* I01 help guide */
+.help { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.help__nav { position: sticky; top: 92px; display: grid; gap: var(--space-1); padding: var(--space-3); }
+.help__link { display: flex; align-items: center; height: 38px; padding: 0 var(--space-3); border-radius: var(--radius-md); color: var(--color-text-secondary); text-decoration: none; }
+.help__link:hover { background: var(--color-surface-muted); }
+.help__link.is-active { background: var(--color-primary); color: #fff; }
+.help__content { display: grid; gap: var(--space-5); }
+.help__content > .panel { scroll-margin-top: 92px; }
+.help__title { margin-bottom: var(--space-4); }
+.help__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.help__step { padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.help__step h3 { margin-bottom: var(--space-2); color: var(--color-text-strong); font-size: var(--text-md); font-weight: var(--weight-medium); }
+.help__step p { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.help__pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.help__foda { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.help__quadrant { display: grid; gap: var(--space-1); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); }
+.help__quadrant span { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.help__quadrant strong { font-weight: var(--weight-medium); }
+.help__quadrant--positive { background: var(--color-success-soft); color: var(--color-success); }
+.help__quadrant--negative { background: var(--color-illustration); color: var(--color-text-strong); }
+.help__letters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.help__letters p { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-strong); }
+.letter--square { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-primary); font-size: var(--text-lg); }
+.help__accordion { display: grid; gap: var(--space-2); }
+.help__group { border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.help__group > summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); color: var(--color-text-strong); cursor: pointer; list-style: none; }
+.help__group > summary::after { content: "▸"; color: var(--color-muted); font-size: var(--text-xs); }
+.help__group[open] > summary::after { content: "▾"; }
+.help__group > p,
+.help__group > ul { padding: 0 var(--space-4) var(--space-4); color: var(--color-text-secondary); }
+.help__group ul { display: grid; gap: var(--space-2); list-style: none; }
+.help__group ul summary { color: var(--color-text-strong); cursor: pointer; }
+.help__group ul small { color: var(--color-muted); }
+.help__group ol { margin: var(--space-2) 0 0; padding-left: var(--space-6); font-size: var(--text-sm); }
+
+@media (max-width: 1100px) {
+    .help, .help__pair { grid-template-columns: 1fr; }
+    .help__nav { position: static; }
+    .help__steps, .help__letters { grid-template-columns: 1fr; }
+}

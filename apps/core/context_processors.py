@@ -11,18 +11,19 @@ def organization_label(user):
 
 def history_badge(user):
     """Finished evaluations of the organization plus the user's own drafts (§7.1)."""
-    try:
-        from apps.evaluations.selectors import history_count
-    except ImportError:
-        return 0
+    from apps.evaluations.selectors import history_count  # local import: evaluations depends on core
+
     return history_count(user)
 
 
 def shell(request):
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated:
-        return {}
+        return {"shell_base": "base/public.html", "shell_home": "/acceso/"}
+    is_admin = user.role == "administrador"
     return {
+        "shell_base": "base_admin.html" if is_admin else "base_decisor.html",
+        "shell_home": "/gestion/" if is_admin else "/",
         "shell_organization": organization_label(user),
         "shell_role": user.get_role_display(),
         "shell_history_badge": history_badge(user) if user.role == "decisor" else 0,

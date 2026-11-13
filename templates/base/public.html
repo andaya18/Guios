@@ -1,0 +1,9 @@
+{% extends "base/document.html" %}
+{% load static %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/layouts/app.css' %}">{% endblock %}
+{% block body %}
+<main class="page page--public">
+    <div class="page--public__brand">{% include "components/brand.html" %}</div>
+    {% block content %}{% endblock %}
+</main>
+{% endblock %}
