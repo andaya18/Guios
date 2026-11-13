@@ -1,0 +1,6 @@
+{# Segmented tabs: pass `items` as a list of (href, label, is_active) triples. #}
+<nav class="segmented" aria-label="{{ label }}">
+    {% for href, text, is_active in items %}
+    <a class="segmented__item{% if is_active %} is-active{% endif %}" href="{{ href }}"{% if is_active %} aria-current="page"{% endif %}>{{ text }}</a>
+    {% endfor %}
+</nav>

@@ -1,0 +1,52 @@
+{% extends "management/base.html" %}
+{% block title %}Revisar y publicar cambios · GUIOS PRO{% endblock %}
+{% block topbar_title %}Catálogo metodológico{% endblock %}
+{% block topbar_subtitle %}Administración / Catálogo / Publicar{% endblock %}
+{% block management_content %}
+<a class="link link--back" href="{% url 'management:catalog_editor' version.number %}">← Catálogo metodológico</a>
+<header class="page__header">
+    <h1 class="page__title">Revisar y publicar cambios</h1>
+    <p class="page__subtitle">Paso obligatorio: solo se publican cambios validados y autorizados (RF-22).</p>
+</header>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="publish-layout">
+        <div class="publish-layout__main">
+            <section class="panel panel--flush">
+                <h2 class="panel__title panel__title--padded">Cambios respecto a v{{ active.number }} ({{ changes|length }})</h2>
+                {% include "management/catalog/_changes.html" with before_label=before_label after_label="Valor nuevo" highlight_after=True %}
+            </section>
+
+            <section class="panel">
+                <h2 class="panel__title">Validación</h2>
+                {{ form.non_field_errors }}
+                {% include "components/field.html" with field=form.justification %}
+                <div class="form-grid">
+                    {% include "components/field.html" with field=form.authorized_by %}
+                    <div class="field">
+                        <label class="field__label" for="version-number">Nombre de la versión</label>
+                        <div class="field__control"><input id="version-number" type="text" value="v{{ version.number }}" readonly></div>
+                    </div>
+                </div>
+                {% include "components/field.html" with field=form.name %}
+                <label class="checkbox{% if form.confirmed.errors %} checkbox--invalid{% endif %}">{{ form.confirmed }}<span>{{ form.confirmed.label }}</span></label>
+                {{ form.confirmed.errors }}
+            </section>
+        </div>
+
+        <aside class="panel publish-layout__aside">
+            <h2 class="panel__title">Impacto</h2>
+            <p class="impact">{% include "components/icon.html" with name="info" %}Las evaluaciones finalizadas y los borradores en curso conservan la versión v{{ active.number }}.</p>
+            <p class="impact">{% include "components/icon.html" with name="info" %}Las evaluaciones nuevas usarán v{{ version.number }} desde su publicación.</p>
+            <p class="impact">{% include "components/icon.html" with name="info" %}La versión v{{ active.number }} queda en el historial y no se puede editar.</p>
+        </aside>
+    </div>
+
+    <div class="panel publish-bar">
+        <a class="button button--secondary" href="{% url 'management:catalog_editor' version.number %}">← Volver al catálogo</a>
+        <span class="publish-bar__hint">Completa los campos obligatorios y la confirmación</span>
+        <button class="button button--primary" type="submit">Publicar versión v{{ version.number }}</button>
+    </div>
+</form>
+{% endblock %}

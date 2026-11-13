@@ -1,0 +1,93 @@
+{% extends "management/base.html" %}
+{% block title %}Organizaciones · GUIOS PRO{% endblock %}
+{% block topbar_title %}Organizaciones{% endblock %}
+{% block topbar_subtitle %}Administración / Organizaciones{% endblock %}
+{% block management_content %}
+<header class="page__header page__header--actions">
+    <div>
+        <h1 class="page__title">Organizaciones</h1>
+        <p class="page__subtitle">Entidades a las que pertenecen los decisores y sus evaluaciones.</p>
+    </div>
+    <a class="button button--primary" href="{% url 'management:organization_create' %}">+ Nueva organización</a>
+</header>
+
+<div class="toolbar">
+    {% include "management/_segmented.html" with items=tabs label="Estado de las organizaciones" %}
+    <form class="toolbar__filters" method="get" action="{% url 'management:organizations' %}">
+        <input type="hidden" name="estado" value="{{ filters.estado|default:'todas' }}">
+        <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Buscar organización..." aria-label="Buscar organización">
+        <select class="input select" name="sector" aria-label="Sector" data-autosubmit>
+            <option value="">Sector</option>
+            {% for value, label in sectors %}<option value="{{ value }}"{% if filters.sector == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </form>
+</div>
+
+<section class="panel panel--flush">
+    {% if organizations %}
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th class="table__wide">Organización</th><th>Sector</th><th>Usuarios</th><th>Evaluaciones</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+            {% for organization in organizations %}
+            <tr{% if not organization.is_active %} class="is-muted"{% endif %}>
+                <td>{{ organization.name }}</td>
+                <td>{{ organization.get_sector_display }}</td>
+                <td>{{ organization.user_count }}</td>
+                <td>{{ organization.evaluation_count }}</td>
+                <td>{% if organization.is_active %}<span class="pill pill--success">Activa</span>{% else %}<span class="pill pill--neutral">Inactiva</span>{% endif %}</td>
+                <td>
+                    {% if organization.is_active %}
+                    <a class="button button--secondary button--sm" href="{% url 'management:organization_edit' organization.pk %}">Editar</a>
+                    {% else %}
+                    <form method="post" action="{% url 'management:organization_reactivate' organization.pk %}">
+                        {% csrf_token %}
+                        <button class="button button--secondary button--sm" type="submit">Reactivar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {% include "components/empty.html" with title="No hay organizaciones con estos filtros" text="Prueba con otro nombre o sector." %}
+    {% endif %}
+</section>
+<p class="alert info-note">{% include "components/icon.html" with name="info" %}Una organización con evaluaciones no se elimina: se desactiva y sus usuarios ya no pueden crear evaluaciones nuevas.</p>
+{% endblock %}
+
+{% block modals %}
+{% if form %}
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="organization-modal-title">
+    <form class="modal__dialog modal__dialog--form" method="post" novalidate>
+        {% csrf_token %}
+        <h2 class="modal__title" id="organization-modal-title">{% if form.instance.pk %}Editar organización{% else %}Nueva organización{% endif %}</h2>
+        {{ form.non_field_errors }}
+        {% include "components/field.html" with field=form.name %}
+        {% include "components/field.html" with field=form.domain %}
+        <fieldset class="field choice-field{% if form.sector.errors %} field--invalid{% endif %}">
+            <legend class="field__label">Sector *</legend>
+            <div class="choice-field__options">
+                {% for radio in form.sector %}<label class="radio">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+            </div>
+            {{ form.sector.errors }}
+        </fieldset>
+        <div class="field">
+            <span class="field__label">Estado</span>
+            <label class="switch">
+                {{ form.is_active }}
+                <span class="switch__track" aria-hidden="true"></span>
+                <span>Activa · visible en el registro de usuarios</span>
+            </label>
+        </div>
+        <div class="modal__actions">
+            <a class="button button--secondary" href="{% url 'management:organizations' %}">Cancelar</a>
+            <button class="button button--primary" type="submit">{% if form.instance.pk %}Guardar cambios{% else %}Crear organización{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+{% block page_scripts %}{% include "management/_autosubmit.html" %}{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "management/base.html" %}
+{% block title %}Catálogo metodológico · GUIOS PRO{% endblock %}
+{% block topbar_title %}Catálogo metodológico{% endblock %}
+{% block topbar_subtitle %}Administración / Catálogo{% endblock %}
+{% block management_content %}
+{% include "management/catalog/_header.html" with section="catalog" %}
+
+<section class="catalog-banner{% if version.status == 'borrador' %} catalog-banner--draft{% endif %}">
+    {% if active %}<span class="pill pill--dark">v{{ active.number }} vigente</span>{% endif %}
+    {% if version.status == "borrador" %}
+    <p class="catalog-banner__text">Los cambios se guardan como borrador de versión y solo se aplican a evaluaciones nuevas cuando se publican.</p>
+    <span class="catalog-banner__count">{{ changes|length }} cambio{{ changes|pluralize }} sin publicar</span>
+    <a class="button button--primary" href="{% url 'management:catalog_publish' version.number %}">Revisar y publicar</a>
+    {% else %}
+    <p class="catalog-banner__text">Estás viendo la versión v{{ version.number }} ({{ version.get_status_display|lower }}). Una versión publicada no se edita: crea un borrador copiando la vigente.</p>
+    <form method="post" action="{% url 'management:catalog_draft_create' %}">
+        {% csrf_token %}
+        <button class="button button--primary" type="submit">Crear versión en borrador</button>
+    </form>
+    {% endif %}
+</section>
+
+<div class="catalog-editor">
+    <nav class="panel factor-tree" aria-label="Factores">
+        <input class="input" type="search" placeholder="Buscar factor..." aria-label="Buscar factor" data-factor-search>
+        {% for dimension in dimension_tree %}
+        <details class="factor-tree__group" open>
+            <summary class="factor-tree__dimension">{{ dimension.name }}<span>{{ dimension.factors.all|length }}</span></summary>
+            {% for item in dimension.factors.all %}
+            <a class="factor-tree__item{% if item == factor %} is-active{% endif %}" href="?factor={{ item.pk }}" data-factor-name="{{ item.name|lower }}"{% if item == factor %} aria-current="true"{% endif %}>
+                <span>{{ item.name }}{% if item.pk in changed_factor_ids %} <span class="factor-tree__dot" title="Modificado"></span>{% endif %}</span>
+                <span>{{ item.subfactors.all|length }}</span>
+            </a>
+            {% endfor %}
+        </details>
+        {% endfor %}
+    </nav>
+
+    <form class="panel factor-detail" method="post" action="?factor={{ factor.pk }}">
+        {% csrf_token %}
+        <header class="factor-detail__header">
+            <h2 class="factor-detail__title">{{ factor.name }}</h2>
+            {% if factor_changes %}<span class="pill pill--draft">Modificado</span>{% endif %}
+        </header>
+        <div class="form-grid">
+            <div class="field">
+                <label class="field__label" for="factor-name">Nombre del factor</label>
+                <div class="field__control"><input id="factor-name" type="text" value="{{ factor.name }}" readonly></div>
+            </div>
+            <div class="field">
+                <label class="field__label" for="factor-dimension">Dimensión</label>
+                <div class="field__control"><input id="factor-dimension" type="text" value="{{ factor.dimension.name }}" readonly></div>
+            </div>
+        </div>
+
+        <fieldset class="field">
+            <legend class="field__label">{{ form.suggested_importance.label }}</legend>
+            <div class="choice-group">
+                {% for radio in form.suggested_importance %}<label class="choice-group__item">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+            </div>
+            {% for change in factor_changes %}{% if change.field == "Importancia sugerida" %}<p class="field__hint">Valor vigente en v{{ active.number }}: {{ change.before }} → nuevo: {{ change.after }}</p>{% endif %}{% endfor %}
+            {{ form.suggested_importance.errors }}
+        </fieldset>
+
+        <fieldset class="field">
+            <legend class="field__label">{{ form.default_scope.label }}</legend>
+            <div class="choice-group">
+                {% for radio in form.default_scope %}<label class="choice-group__item">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+            </div>
+            {% for change in factor_changes %}{% if change.field == "Alcance por defecto" %}<p class="field__hint">Valor vigente en v{{ active.number }}: {{ change.before }} → nuevo: {{ change.after }}</p>{% endif %}{% endfor %}
+            {{ form.default_scope.errors }}
+        </fieldset>
+
+        <h3 class="factor-detail__subtitle">Subfactores ({{ factor_subfactors|length }})</h3>
+        <ol class="subfactor-list">
+            {% for subfactor in factor_subfactors %}<li>{{ subfactor.name }}</li>{% endfor %}
+        </ol>
+        <p class="footnote">Los factores y subfactores no se agregan ni se quitan desde aquí: ese cambio exige una validación metodológica fuera del sistema.</p>
+
+        {% if version.status == "borrador" %}
+        <div class="form-actions">
+            <a class="button button--secondary" href="?factor={{ factor.pk }}">Descartar cambios</a>
+            <button class="button button--dark" type="submit">Guardar en borrador</button>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<script>
+(() => {
+    const search = document.querySelector("[data-factor-search]");
+    search?.addEventListener("input", () => {
+        const term = search.value.trim().toLowerCase();
+        document.querySelectorAll("[data-factor-name]").forEach((item) => {
+            item.hidden = term !== "" && !item.dataset.factorName.includes(term);
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "management/base.html" %}
+{% load management_ui %}
+{% block title %}Usuarios · GUIOS PRO{% endblock %}
+{% block topbar_title %}Usuarios{% endblock %}
+{% block topbar_subtitle %}Administración / Usuarios{% endblock %}
+{% block management_content %}
+<header class="page__header page__header--actions">
+    <div>
+        <h1 class="page__title">Usuarios</h1>
+        <p class="page__subtitle">Gestiona cuentas, roles y la organización de cada usuario.</p>
+    </div>
+    <a class="button button--primary" href="{% url 'management:user_create' %}">+ Nuevo usuario</a>
+</header>
+
+<div class="toolbar">
+    {% include "management/_segmented.html" with items=tabs label="Estado de los usuarios" %}
+    <form class="toolbar__filters" method="get">
+        <input type="hidden" name="estado" value="{{ filters.estado|default:'activos' }}">
+        <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Buscar nombre o correo..." aria-label="Buscar nombre o correo">
+        <select class="input select" name="rol" aria-label="Rol" data-autosubmit>
+            <option value="">Rol</option>
+            {% for value, label in roles %}<option value="{{ value }}"{% if filters.rol == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <select class="input select" name="organizacion" aria-label="Organización" data-autosubmit>
+            <option value="">Organización</option>
+            {% for organization in organizations %}<option value="{{ organization.pk }}"{% if filters.organizacion == organization.pk|stringformat:'s' %} selected{% endif %}>{{ organization.name }}</option>{% endfor %}
+        </select>
+    </form>
+</div>
+
+<section class="panel panel--flush">
+    {% if users %}
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Organización</th><th>Estado</th><th>Último acceso</th><th>Acciones</th></tr></thead>
+            <tbody>
+            {% for user in users %}
+            <tr>
+                <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ user.get_full_name|default:user.email }}</span></td>
+                <td>{{ user.email }}</td>
+                <td>{% if user.role == "administrador" %}<span class="pill pill--dark">Administrador</span>{% else %}<span class="pill pill--neutral">Decisor</span>{% endif %}</td>
+                <td>{{ user.organization.name|default:"—" }}</td>
+                <td>{% if user.is_active %}<span class="pill pill--success">Activo</span>{% else %}<span class="pill pill--neutral">Desactivado</span>{% endif %}</td>
+                <td>{{ user.last_login|last_access }}</td>
+                <td><a class="button button--secondary button--sm" href="{% url 'management:user_edit' user.pk %}">Editar</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {% include "components/empty.html" with title="No hay usuarios con estos filtros" text="Prueba con otro nombre, rol u organización." %}
+    {% endif %}
+</section>
+<p class="footnote">Los usuarios no se eliminan: se desactivan para conservar la autoría de sus evaluaciones.</p>
+{% endblock %}
+{% block page_scripts %}{% include "management/_autosubmit.html" %}{% endblock %}

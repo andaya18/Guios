@@ -1,0 +1,8 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/management.css' %}">{% endblock %}
+{% block topbar_actions %}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+{% block management_content %}{% endblock %}
+{% endblock %}

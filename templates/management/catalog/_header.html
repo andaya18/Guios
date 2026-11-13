@@ -1,0 +1,11 @@
+{# Catalog page header (M01 / M03) with the Catálogo · Versiones switch. #}
+<header class="page__header page__header--actions">
+    <div>
+        <h1 class="page__title">Catálogo metodológico</h1>
+        <p class="page__subtitle">{{ dimensions }} dimensiones · {{ factors }} factores · {{ subfactors }} subfactores</p>
+    </div>
+    <nav class="segmented" aria-label="Secciones del catálogo">
+        <a class="segmented__item{% if section == 'catalog' %} is-active{% endif %}" href="{{ catalog_url }}"{% if section == 'catalog' %} aria-current="page"{% endif %}>Catálogo</a>
+        <a class="segmented__item{% if section == 'versions' %} is-active{% endif %}" href="{% url 'management:catalog' %}"{% if section == 'versions' %} aria-current="page"{% endif %}>Versiones</a>
+    </nav>
+</header>

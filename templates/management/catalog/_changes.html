@@ -1,0 +1,20 @@
+{# Change table shared by M02 and M03: one row per changed field of a factor. #}
+{% if changes %}
+<div class="table-wrap">
+    <table class="table">
+        <thead><tr><th class="table__wide">Elemento</th><th>Campo</th><th>{{ before_label }}</th><th>{{ after_label }}</th></tr></thead>
+        <tbody>
+        {% for change in changes %}
+        <tr data-change>
+            <td>{{ change.factor.name }}</td>
+            <td>{{ change.field }}</td>
+            <td>{{ change.before }}</td>
+            <td>{% if highlight_after %}<span class="pill pill--draft">{{ change.after }}</span>{% else %}{{ change.after }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+{% include "components/empty.html" with title="Sin cambios" text="Las dos versiones tienen la misma importancia sugerida y el mismo alcance en los 18 factores." %}
+{% endif %}

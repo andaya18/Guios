@@ -1,0 +1,63 @@
+{% extends "management/base.html" %}
+{% load ui %}
+{% block title %}Panel de administración · GUIOS PRO{% endblock %}
+{% block management_content %}
+<header class="page__header">
+    <h1 class="page__title">Panel de administración</h1>
+    <p class="page__subtitle">Lo que necesita tu atención primero: usuarios, catálogo y organizaciones.</p>
+</header>
+
+<div class="admin-overview">
+    <section class="panel admin-card" aria-labelledby="card-users">
+        <header class="admin-card__header">
+            <h2 class="panel__title" id="card-users">Usuarios</h2>
+        </header>
+        <div class="metrics">
+            <p class="metric metric--accent"><span class="metric__value">{{ summary.users_active }}</span><span class="metric__label">Activos</span></p>
+            <p class="metric"><span class="metric__value">{{ summary.users_inactive }}</span><span class="metric__label">Desactivados</span></p>
+        </div>
+        <div class="admin-card__actions">
+            <a class="button button--primary" href="{% url 'management:users' %}">Ver usuarios</a>
+        </div>
+    </section>
+
+    <section class="panel admin-card" aria-labelledby="card-catalog">
+        <header class="admin-card__header">
+            <h2 class="panel__title" id="card-catalog">Estado del catálogo</h2>
+            {% if summary.active_version %}<span class="pill pill--dark">v{{ summary.active_version.number }} vigente</span>{% endif %}
+        </header>
+        <div class="metrics">
+            {% if summary.draft %}
+            <p class="metric metric--accent"><span class="metric__value">{{ summary.draft_changes }}</span><span class="metric__label">Cambios sin publicar</span></p>
+            {% endif %}
+            <p class="metric"><span class="metric__value">{{ summary.factors }}</span><span class="metric__label">Factores</span></p>
+            <p class="metric"><span class="metric__value">{{ summary.subfactors }}</span><span class="metric__label">Subfactores</span></p>
+        </div>
+        {% with active=summary.active_version %}
+        {% if active %}
+        <p class="admin-card__note">Versión vigente: v{{ active.number }} · {{ active.name }}{% if active.published_at %}, publicada el {{ active.published_at|short_date }}{% endif %}.</p>
+        {% endif %}
+        {% endwith %}
+        <div class="admin-card__actions">
+            {% if summary.draft %}
+            <a class="button button--dark" href="{% url 'management:catalog_publish' summary.draft.number %}">Revisar y publicar</a>
+            {% endif %}
+            <a class="button button--secondary" href="{% if summary.draft %}{% url 'management:catalog_editor' summary.draft.number %}{% else %}{% url 'management:catalog' %}{% endif %}">Ir al catálogo</a>
+        </div>
+    </section>
+
+    <section class="panel admin-card" aria-labelledby="card-organizations">
+        <header class="admin-card__header">
+            <h2 class="panel__title" id="card-organizations">Organizaciones</h2>
+        </header>
+        <div class="metrics">
+            <p class="metric"><span class="metric__value">{{ summary.organizations_active }}</span><span class="metric__label">Activas</span></p>
+            <p class="metric"><span class="metric__value">{{ summary.organizations_inactive }}</span><span class="metric__label">Desactivadas</span></p>
+        </div>
+        <p class="admin-card__note">{{ summary.organizations_public }} pública{{ summary.organizations_public|pluralize }} · {{ summary.organizations_private }} privada{{ summary.organizations_private|pluralize }}. Las desactivadas conservan sus evaluaciones.</p>
+        <div class="admin-card__actions">
+            <a class="button button--secondary" href="{% url 'management:organizations' %}">Gestionar organizaciones</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

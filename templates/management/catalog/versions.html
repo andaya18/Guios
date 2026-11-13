@@ -1,0 +1,66 @@
+{% extends "management/base.html" %}
+{% load ui management_ui %}
+{% block title %}Versiones del catálogo · GUIOS PRO{% endblock %}
+{% block topbar_title %}Catálogo metodológico{% endblock %}
+{% block topbar_subtitle %}Administración / Catálogo / Versiones{% endblock %}
+{% block management_content %}
+{% include "management/catalog/_header.html" with section="versions" %}
+
+<section class="panel panel--flush">
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Versión</th><th>Publicada</th><th>Cambios</th><th class="table__wide">Sustento</th><th>Evaluaciones</th><th>Estado</th><th><span class="visually-hidden">Acciones</span></th></tr></thead>
+            <tbody>
+            {% for version in versions %}
+            <tr>
+                <td>v{{ version.number }}</td>
+                <td>{{ version.published_at|short_date|default:"—" }}</td>
+                <td>{% if version.previous %}{{ version.changed_factors }} factor{{ version.changed_factors|pluralize:"es" }}{% else %}Carga inicial{% endif %}</td>
+                <td>{{ version.justification|default:version.name }}{% if version.authorized_by %} · autorizado por {{ version.authorized_by }}{% endif %}</td>
+                <td>{{ version.evaluation_count }}</td>
+                <td><span class="pill pill--{{ version.status|version_pill }}">{{ version.get_status_display }}</span></td>
+                <td>
+                    <div class="table__actions">
+                        {% if version.previous %}<a class="button button--secondary button--sm" href="{% url 'management:catalog_compare' %}?a={{ version.previous.number }}&amp;b={{ version.number }}">Ver cambios</a>{% endif %}
+                        {% if version.status == "publicada" %}
+                        <form method="post" action="{% url 'management:catalog_activate' version.number %}">
+                            {% csrf_token %}
+                            <button class="button button--secondary button--sm" type="submit">Marcar como activa</button>
+                        </form>
+                        {% elif version.status == "borrador" %}
+                        <a class="button button--secondary button--sm" href="{% url 'management:catalog_editor' version.number %}">Editar borrador</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="catalog-split">
+    <section class="panel panel--flush">
+        {% if base and other %}
+        <h2 class="panel__title panel__title--padded">Cambios de v{{ other.number }} respecto a v{{ base.number }} ({{ changes|length }})</h2>
+        {% include "management/catalog/_changes.html" with before_label="Antes" after_label="Después" %}
+        {% else %}
+        {% include "components/empty.html" with title="No hay otra versión para comparar" %}
+        {% endif %}
+    </section>
+    <aside class="panel rules">
+        <h2 class="panel__title">Reglas</h2>
+        <ul class="rules__list">
+            <li>Una versión publicada no se edita.</li>
+            <li>Cada evaluación guarda la versión con la que se hizo.</li>
+            <li>Solo hay una versión vigente.</li>
+        </ul>
+        {% if not draft %}
+        <form method="post" action="{% url 'management:catalog_draft_create' %}">
+            {% csrf_token %}
+            <button class="button button--dark" type="submit">Crear versión en borrador</button>
+        </form>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}
