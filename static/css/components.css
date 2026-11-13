@@ -163,3 +163,4 @@
 .modal__notice { margin-top: var(--space-4); }
 .modal__actions-start { margin-right: auto; }
 .button--dashed { border: 1.5px dashed var(--color-text-strong); background: var(--color-surface); color: var(--color-text-strong); }
+.button svg { width: 16px; height: 16px; flex: none; }

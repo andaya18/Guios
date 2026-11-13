@@ -1,0 +1,11 @@
+{% extends "evaluations/partials/stage_base.html" %}
+{% block title %}Etapa 3 · {{ evaluation.software }} · GUIOS PRO{% endblock %}
+{% block stage %}
+{% include "evaluations/partials/results.html" %}
+<div class="stage-footer">
+    <a class="button button--secondary" href="{{ previous_url }}">{% include "components/icon.html" with name="arrow-left" %} Volver a ponderación</a>
+    <span class="stage-footer__hint">Al finalizar podrás exportar, duplicar y comparar.</span>
+    <button class="button button--primary" type="button" data-open-modal="finish-modal">Finalizar evaluación</button>
+</div>
+{% endblock %}
+{% block stage_modals %}{% include "evaluations/partials/finish_modal.html" %}{% endblock %}

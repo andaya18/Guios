@@ -1,0 +1,48 @@
+{% extends "evaluations/partials/stage_base.html" %}
+{% load ui %}
+{% block title %}Etapa 2 · {{ evaluation.software }} · GUIOS PRO{% endblock %}
+{% block stage %}
+{% csrf_token %}
+<div class="weighting">
+    <aside class="panel weighting__list" aria-label="Factores relevantes">
+        <header class="weighting__list-head"><h2 class="panel__title">Factores relevantes</h2><span>{{ factors|length }}</span></header>
+        <div class="progress weighting__list-progress"><div class="progress__bar" style="width: {{ overall_progress }}%"></div></div>
+        <ul class="factor-nav">
+            {% for item in factors %}
+            <li><a class="factor-nav__item{% if item.is_current %} is-current{% endif %}" href="{{ item.url }}"{% if item.is_current %} aria-current="true"{% endif %} id="nav-{{ item.pk }}">
+                <span class="factor-nav__dot{% if item.answered == item.total %} is-complete{% endif %}"></span>{{ item.name }}<span class="factor-nav__count">{{ item.answered }}/{{ item.total }}</span>
+            </a></li>
+            {% endfor %}
+        </ul>
+    </aside>
+    <section class="panel weighting__main" aria-labelledby="current-factor">
+        <header class="weighting__head" id="factor-summary">{% include "evaluations/partials/stage2_summary.html" %}</header>
+        <div class="table-wrap">
+            <table class="table weighting__table">
+                <thead><tr><th>Subfactor</th><th>Cumplimiento</th></tr></thead>
+                <tbody>
+                {% for answer in answers %}
+                <tr hx-post="{% url 'evaluations:answer' evaluation.pk answer.pk %}" hx-trigger="change" hx-target="#factor-summary" hx-include="this">
+                    <td>{{ forloop.counter }}. {{ answer.subfactor.name }}</td>
+                    <td>
+                        <fieldset class="segmented" aria-label="Cumplimiento del subfactor {{ forloop.counter }}">
+                            {% for value, label in options %}
+                            <input type="radio" id="answer-{{ answer.pk }}-{{ value }}" name="answer-{{ answer.pk }}-value" value="{{ value }}"{% if answer.value == value %} checked{% endif %}>
+                            <label for="answer-{{ answer.pk }}-{{ value }}">{{ value }} {{ label }}</label>
+                            {% endfor %}
+                        </fieldset>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="weighting__note">Un clic por subfactor. PM ≥ 3 en un factor {{ current.scope|lower }} → {{ current.foda_if_meets }}; la etiqueta se confirma al responder los {{ current.total }} subfactores.</p>
+    </section>
+</div>
+<div class="stage-footer">
+    <a class="button button--secondary" href="{{ previous_url }}">{% include "components/icon.html" with name="arrow-left" %} {{ previous_label }}</a>
+    <span class="stage-footer__hint" id="factor-missing">{% include "evaluations/partials/stage2_missing.html" %}</span>
+    <a class="button button--primary" href="{{ next_url }}">{{ next_label }} {% include "components/icon.html" with name="arrow-right" %}</a>
+</div>
+{% endblock %}

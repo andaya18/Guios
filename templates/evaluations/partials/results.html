@@ -1,0 +1,53 @@
+{% load ui %}
+<section class="recommendation-card" aria-labelledby="recommendation-name">
+    <span class="letter letter--hero">{{ result.letter }}</span>
+    <div class="recommendation-card__body">
+        <p class="recommendation-card__eyebrow">Recomendación</p>
+        <h2 class="recommendation-card__name" id="recommendation-name">{{ result.letter|recommendation_title }}</h2>
+        <p class="recommendation-card__text">{{ result.text }}</p>
+        <p class="recommendation-card__support">Sustentan esta recomendación:
+            {% for factor in result.supporting %}<span class="chip {% if factor.is_problem %}chip--dark{% else %}chip--success{% endif %}">{{ factor.name }} · PM {{ factor.pm|pm }}</span>{% endfor %}
+        </p>
+    </div>
+    <p class="recommendation-card__stats">F {{ result.counts.Fortaleza }} · O {{ result.counts.Oportunidad }} · D {{ result.counts.Debilidad }} · A {{ result.counts.Amenaza }}<br>{{ result.relevant_count }} factores evaluados<br>{{ result.discarded_count }} descartados en Etapa 1</p>
+</section>
+
+<div class="results">
+    <section class="panel">
+        <header class="panel__header"><h2 class="panel__title">Matriz FODA</h2><span class="panel__hint">Internos arriba · externos abajo</span></header>
+        <div class="foda">
+            {% for quadrant in result.foda %}
+            <div class="foda__cell foda__cell--{% if quadrant.positive %}positive{% else %}negative{% endif %}">
+                <h3>{{ quadrant.label }} ({{ quadrant.factors|length }})</h3>
+                <div class="foda__chips">{% for name in quadrant.factors %}<span class="chip">{{ name }}</span>{% endfor %}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    <section class="panel results__detail" data-filter-scope>
+        <header class="panel__header">
+            <h2 class="panel__title">Detalle por factor</h2>
+            <div class="toggle" role="group" aria-label="Filtrar factores">
+                <button type="button" class="toggle__item is-active" data-filter="all">Todos</button>
+                <button type="button" class="toggle__item" data-filter="problems">Debilidades y amenazas</button>
+            </div>
+        </header>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>Factor</th><th>Alcance</th><th>Imp. relativa</th><th>PM</th><th>FODA</th><th></th></tr></thead>
+                <tbody>
+                {% for row in result.rows %}
+                <tr{% if row.is_problem %} data-problem{% endif %}>
+                    <td>{{ row.name }}</td><td>{{ row.scope|scope_label }}</td><td>{{ row.relative_importance|importance }}</td><td>{{ row.pm|pm }}</td>
+                    <td><span class="pill {% if row.is_problem %}pill--dark{% else %}pill--success{% endif %}">{{ row.foda }}</span></td>
+                    <td><details class="subfactors"><summary class="link">Ver subfactores</summary>
+                        <ul>{% for answer in row.answers %}<li>{{ answer.name }} <strong>{{ answer.value }}</strong></li>{% endfor %}</ul>
+                    </details></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="results__note">Mostrando <span data-visible-count>{{ result.rows|length }}</span> de {{ result.rows|length }} · «Ver subfactores» despliega las respuestas sin salir de la pantalla.</p>
+    </section>
+</div>

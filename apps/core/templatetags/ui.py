@@ -66,3 +66,9 @@ def importance(value):
 @register.filter
 def scope_label(value):
     return {"interno": "Interno", "externo": "Externo"}.get(value, "")
+
+
+@register.filter
+def recommendation_title(letter):
+    """Full name of a recommendation letter (§4.7), e.g. 'Analizar y posponer la adopción'."""
+    return {"A": "Adoptar", "B": "Adoptar con matices", "C": "Analizar y posponer la adopción"}.get(letter, "")

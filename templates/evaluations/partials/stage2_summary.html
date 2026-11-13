@@ -1,0 +1,11 @@
+{% load ui %}<div>
+    <p class="weighting__meta">Factor {{ current.index }} de {{ current.count }} · {{ current.dimension }} · Alcance {{ current.scope|lower }} · <span title="{{ current.description }}">{% include "components/icon.html" with name="info" %} Qué evalúa</span></p>
+    <h2 class="weighting__title" id="current-factor">{{ current.name }}</h2>
+</div>
+<div class="weighting__pm">
+    <span>PM parcial · {{ current.answered }} de {{ current.total }}</span>
+    <strong>{% if current.pm is not None %}{{ current.pm|pm }}{% else %}—{% endif %}</strong>
+</div>
+{% if current.foda %}<span class="pill {% if current.meets %}pill--success{% else %}pill--danger{% endif %}">{{ current.foda }}{% if current.answered < current.total %} · provisional{% endif %}</span>{% endif %}
+{% if oob %}<span id="factor-missing" hx-swap-oob="true" class="stage-footer__hint">{% include "evaluations/partials/stage2_missing.html" %}</span>
+<a id="nav-{{ current.pk }}" hx-swap-oob="true" class="factor-nav__item is-current" href="{{ current.url }}" aria-current="true"><span class="factor-nav__dot{% if current.answered == current.total %} is-complete{% endif %}"></span>{{ current.name }}<span class="factor-nav__count">{{ current.answered }}/{{ current.total }}</span></a>{% endif %}

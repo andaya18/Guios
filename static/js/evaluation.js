@@ -27,3 +27,15 @@
         if (token) event.detail.headers["X-CSRFToken"] = token.value;
     });
 })();
+
+// E3/H02 detail filter: "Todos" | "Debilidades y amenazas".
+document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-filter]");
+    if (!button) return;
+    const scope = button.closest("[data-filter-scope]");
+    scope.querySelectorAll("[data-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
+    scope.classList.toggle("is-problems-only", button.dataset.filter === "problems");
+    const selector = button.dataset.filter === "problems" ? "tbody tr[data-problem]" : "tbody tr";
+    const counter = scope.querySelector("[data-visible-count]");
+    if (counter) counter.textContent = scope.querySelectorAll(selector).length;
+});
