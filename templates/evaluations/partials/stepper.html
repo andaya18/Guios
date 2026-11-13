@@ -1,0 +1,9 @@
+<nav class="stepper" aria-label="Etapas de la evaluación">
+    {% for item in stages %}
+    {% if not forloop.first %}<span class="stepper__line{% if item.number <= stage %} is-done{% endif %}"></span>{% endif %}
+    <a class="stepper__step{% if item.number == stage %} is-current{% elif item.number < stage %} is-done{% endif %}"{% if item.url %} href="{{ item.url }}"{% endif %}{% if item.number == stage %} aria-current="step"{% endif %}>
+        <span class="stepper__number">{% if item.number < stage %}{% include "components/icon.html" with name="check" stroke="2.4" %}{% else %}{{ item.number }}{% endif %}</span>
+        <span><span class="stepper__title">{{ item.title }}</span><br><span class="stepper__caption">{{ item.caption }}</span></span>
+    </a>
+    {% endfor %}
+</nav>

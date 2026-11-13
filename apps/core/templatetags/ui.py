@@ -4,7 +4,7 @@ from django import template
 from django.utils import timezone
 from django.utils.formats import date_format
 
-from apps.evaluations.services import formatear_pm
+from apps.evaluations.services import ESCALA, formatear_pm
 
 register = template.Library()
 
@@ -55,3 +55,14 @@ def ago_short(value):
     if minutes < 60 * 24:
         return f"{minutes // 60} h"
     return f"{minutes // (60 * 24)} d"
+
+
+@register.filter
+def importance(value):
+    """1..4 -> 'Irrelevante' | 'Opcional' | 'Importante' | 'Fundamental' (§4.1)."""
+    return ESCALA.get(value, "")
+
+
+@register.filter
+def scope_label(value):
+    return {"interno": "Interno", "externo": "Externo"}.get(value, "")

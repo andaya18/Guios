@@ -1,0 +1,23 @@
+{% load ui %}<tr id="factor-{{ row.pk }}" class="{% if row.decision_importance and not row.is_relevant %}is-discarded{% endif %}"
+    hx-post="{% url 'evaluations:factor' evaluation.pk row.pk %}" hx-trigger="change" hx-target="this" hx-swap="outerHTML" hx-include="this">
+    <td><span class="factor-name">{{ row.factor.name }}<span title="{{ row.factor.description|default:row.factor.name }}">{% include "components/icon.html" with name="info" %}</span></span></td>
+    <td><span class="pill pill--neutral">{{ row.suggested_importance|importance }}</span></td>
+    <td>
+        <fieldset class="segmented" aria-label="Tu importancia para {{ row.factor.name }}">
+            {% for value, label in scale %}
+            <input type="radio" id="factor-{{ row.pk }}-importance-{{ value }}" name="factor-{{ row.pk }}-decision_importance" value="{{ value }}"{% if row.decision_importance == value %} checked{% endif %}>
+            <label for="factor-{{ row.pk }}-importance-{{ value }}">{{ value }} {{ label }}</label>
+            {% endfor %}
+        </fieldset>
+    </td>
+    <td>{% if row.relative_importance %}{{ row.relative_importance|importance }}{% else %}—{% endif %}</td>
+    <td>
+        <select class="scope-select" name="factor-{{ row.pk }}-scope" aria-label="Alcance de {{ row.factor.name }}">
+            <option value="interno"{% if row.scope == "interno" %} selected{% endif %}>Interno</option>
+            <option value="externo"{% if row.scope == "externo" %} selected{% endif %}>Externo</option>
+        </select>
+    </td>
+    <td>{% if not row.decision_importance %}<span class="pill pill--pending">Pendiente</span>{% elif row.is_relevant %}<span class="pill pill--success">Relevante</span>{% else %}<span class="pill pill--neutral">Descartado</span>{% endif %}</td>
+</tr>
+{% if oob %}<div id="stage1-counters" hx-swap-oob="true" class="stage-intro__counters">{% include "evaluations/partials/stage1_counters.html" %}</div>
+<div id="stage1-footer" hx-swap-oob="true" class="stage-footer">{% include "evaluations/partials/stage1_footer.html" %}</div>{% endif %}

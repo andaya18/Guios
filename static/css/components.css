@@ -17,6 +17,7 @@
     font-size: var(--text-md);
     font-weight: var(--weight-medium);
     line-height: 1;
+    white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
     transition: background-color .15s ease, border-color .15s ease;
@@ -155,3 +156,10 @@
 .empty__title { color: var(--color-text-strong); font-size: var(--text-md); font-weight: var(--weight-medium); }
 .empty__text { max-width: 360px; font-size: var(--text-sm); }
 .panel__title + .panel__subtitle { margin-top: var(--space-4); }
+.modal[hidden] { display: none; }
+.modal__actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-6); }
+.modal__dialog--start { width: min(520px, 100%); padding: var(--space-6); text-align: left; }
+.modal__dialog--start .modal__title { font-size: var(--text-lg); }
+.modal__notice { margin-top: var(--space-4); }
+.modal__actions-start { margin-right: auto; }
+.button--dashed { border: 1.5px dashed var(--color-text-strong); background: var(--color-surface); color: var(--color-text-strong); }

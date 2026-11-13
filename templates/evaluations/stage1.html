@@ -1,0 +1,23 @@
+{% extends "evaluations/partials/stage_base.html" %}
+{% block title %}Etapa 1 · {{ evaluation.software }} · GUIOS PRO{% endblock %}
+{% block stage %}
+<div class="stage-intro">
+    <p>Indica qué tan importante es cada factor para tu organización. El sistema cruza tu valor con la importancia sugerida y descarta los irrelevantes.</p>
+    <div class="stage-intro__counters" id="stage1-counters">{% include "evaluations/partials/stage1_counters.html" %}</div>
+</div>
+{% csrf_token %}
+<div class="factors table-wrap">
+    <table class="table">
+        <thead>
+            <tr><th>Factor</th><th>Importancia<br>sugerida</th><th>Tu importancia</th><th>Importancia<br>relativa</th><th>Alcance</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+        {% for group in groups %}
+            <tr class="group"><td colspan="6">{{ group.label }}</td></tr>
+            {% for row in group.rows %}{% include "evaluations/partials/stage1_row.html" %}{% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="stage-footer" id="stage1-footer">{% include "evaluations/partials/stage1_footer.html" %}</div>
+{% endblock %}

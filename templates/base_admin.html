@@ -4,7 +4,7 @@
     <h2 class="nav-section__title">Principal {% include "components/icon.html" with name="chevron-down" %}</h2>
     <div class="nav-section__items">
         {% include "components/nav_item.html" with href="/gestion/" icon="home" label="Panel de inicio" match="/gestion/" exact=True %}
-        {% include "components/nav_item.html" with href="/gestion/usuarios/" icon="users" label="Usuarios" match="/gestion/usuarios/" badge=shell_pending_users %}
+        {% include "components/nav_item.html" with href="/gestion/usuarios/" icon="users" label="Usuarios" match="/gestion/usuarios/" %}
         {% include "components/nav_item.html" with href="/gestion/organizaciones/" icon="building" label="Organizaciones" match="/gestion/organizaciones/" %}
         {% include "components/nav_item.html" with href="/gestion/catalogo/" icon="layers" label="Catálogo metodológico" match="/gestion/catalogo/" %}
     </div>

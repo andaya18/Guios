@@ -1,0 +1,10 @@
+<div class="stage-footer__progress">
+    <span>{{ counts.evaluated }} de {{ counts.total }} factores evaluados</span>
+    <div class="progress"><div class="progress__bar" style="width: {% widthratio counts.evaluated counts.total 100 %}%"></div></div>
+</div>
+{% if counts.evaluated < counts.total %}<span class="stage-footer__hint">Completa los {{ counts.total }} factores para continuar</span>
+{% elif not counts.relevant %}<span class="stage-footer__hint">Debes marcar al menos un factor como relevante para continuar.</span>{% endif %}
+<form method="post" action="{% url 'evaluations:stage1' evaluation.pk %}"{% if counts.evaluated == counts.total and counts.relevant %} class="stage-footer__action"{% endif %}>
+    {% csrf_token %}
+    <button class="button button--primary" type="submit"{% if counts.evaluated < counts.total or not counts.relevant %} disabled{% endif %}>Siguiente: Ponderación {% include "components/icon.html" with name="arrow-right" %}</button>
+</form>

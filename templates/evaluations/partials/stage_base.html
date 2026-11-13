@@ -1,0 +1,23 @@
+{% extends "base_decisor.html" %}
+{% load static %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/evaluation.css' %}">{% endblock %}
+{% block topbar_title %}Evaluación · {{ evaluation.software }}{% endblock %}
+{% block topbar_subtitle %}Evaluaciones / {{ evaluation.software }} / Etapa {{ stage }}{% endblock %}
+{% block topbar_tools %}
+<span class="save-status" data-save-status role="status" aria-live="polite">Guardado automáticamente</span>
+{% endblock %}
+{% block topbar_actions %}
+<button class="button button--secondary" type="button" data-open-modal="exit-modal">Guardar y salir</button>
+{% endblock %}
+{% block content %}
+{% include "evaluations/partials/stepper.html" %}
+{% block stage %}{% endblock %}
+{% endblock %}
+{% block modals %}
+{% include "evaluations/partials/exit_modal.html" %}
+{% block stage_modals %}{% endblock %}
+{% endblock %}
+{% block page_scripts %}
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+<script src="{% static 'js/evaluation.js' %}" defer></script>
+{% endblock %}
