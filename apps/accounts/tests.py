@@ -243,6 +243,23 @@ class RememberMeTests(LoginTests):
         )
         self.assertTrue(self.client.session.get_expire_at_browser_close())
 
+    def test_session_expires_after_30_minutes_of_inactivity(self):
+        from django.conf import settings
+
+        self.client.post(
+            reverse("accounts:login"),
+            {"username": "ana@guios.edu.ec", "password": "Correcta123!"},
+        )
+        self.assertEqual(self.client.session.get_expiry_age(), 30 * 60)
+        self.assertTrue(settings.SESSION_SAVE_EVERY_REQUEST)
+
+    def test_with_remember_session_lasts_14_days(self):
+        self.client.post(
+            reverse("accounts:login"),
+            {"username": "ana@guios.edu.ec", "password": "Correcta123!", "remember": "on"},
+        )
+        self.assertEqual(self.client.session.get_expiry_age(), 14 * 24 * 60 * 60)
+
     def test_with_remember_session_persists(self):
         self.client.post(
             reverse("accounts:login"),

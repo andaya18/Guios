@@ -33,3 +33,4 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - L10 Figma vs guide conflicts resolved in favour of the guide (AGENTS.md: PDF is the functional source): PM shown with 2 decimals (Figma shows 1); E3 recommendation text uses RA/RB/RC verbatim (Figma shows free text). Templates E1-E3 + E4/E5 modals done against frames (365d54e + E2/E3 commit); views pending T4a.
 - L9 (user) "haz el registro automático". Figma registration-approval queue (AD01 table, U01 Pendientes tab) is dropped; §6.1 automatic signup stands.
 - L11 Pending refactor from GGA review: replace hardcoded paths (/comparar/, /evaluaciones/nueva/, /historial/, /ayuda/) with {% url %} once T4b/T5 views and url names exist.
+- L12 (user) "hazlo": ReportLab authorized, pinned, added by session 2 in T6. Session 1 owns T4b. Session 3: drop pending signups, add published_by/authorized_at, fix 2 management tests.

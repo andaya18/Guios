@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "apps.evaluations",
     "apps.exports",
     "apps.management",
+    "apps.ai",
 ]
 
 MIDDLEWARE = [
@@ -89,8 +90,26 @@ LOGIN_URL = "/acceso/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/acceso/"
 
+# A session ends after 30 minutes without activity (G02); "Recordarme" extends it.
+SESSION_COOKIE_AGE = 30 * 60
+SESSION_SAVE_EVERY_REQUEST = True
+REMEMBER_ME_AGE = 14 * 24 * 60 * 60
+
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend",
 )
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@guios.local")
+# Only used with EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend (production).
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_TIMEOUT = 10
+
+# Optional AI suggestions (apps.ai). Without a key the feature stays disabled.
+AI_PROVIDER = os.getenv("AI_PROVIDER", "disabled")
+AI_API_KEY = os.getenv("AI_API_KEY", "")
+AI_MODEL = os.getenv("AI_MODEL", "")
+AI_TIMEOUT_SECONDS = int(os.getenv("AI_TIMEOUT_SECONDS", "20"))

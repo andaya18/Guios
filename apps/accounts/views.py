@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -42,7 +43,10 @@ class AccountLoginView(LoginView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        if not form.cleaned_data.get("remember"):
+        if form.cleaned_data.get("remember"):
+            self.request.session.set_expiry(settings.REMEMBER_ME_AGE)
+        else:
+            # Cookie dies with the browser; the server still expires it after SESSION_COOKIE_AGE idle.
             self.request.session.set_expiry(0)
         return response
 
