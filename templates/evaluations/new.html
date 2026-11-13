@@ -1,0 +1,60 @@
+{% extends "base_decisor.html" %}
+{% load static %}
+{% block title %}Nueva evaluación · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/evaluation.css' %}">{% endblock %}
+{% block topbar_title %}Nueva evaluación{% endblock %}
+{% block topbar_subtitle %}Evaluaciones / Nueva{% endblock %}
+{% block content %}
+<a class="link link--back page__back" href="/">{% include "components/icon.html" with name="arrow-left" %}Panel de inicio</a>
+<header class="page__header">
+    <h1 class="page__title">Nueva evaluación</h1>
+    <p class="page__subtitle">Elige el software candidato. La organización se toma de tu cuenta.</p>
+</header>
+<form method="post" novalidate data-new-evaluation>
+    {% csrf_token %}
+    <div class="new-evaluation">
+        <section class="panel">
+            <h2 class="section-title">1. Software a evaluar</h2>
+            <div class="tabs-toggle" role="radiogroup" aria-label="Origen del software">
+                {% for choice in form.mode %}{{ choice.tag }}<label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>{% endfor %}
+            </div>
+            <div data-mode-panel="existente">
+                {% include "components/field.html" with field=form.software icon="chevron-down" %}
+            </div>
+            <div data-mode-panel="nuevo">
+                <div class="form-row">
+                    {% include "components/field.html" with field=form.name %}
+                    {% include "components/field.html" with field=form.version %}
+                </div>
+                {% include "components/field.html" with field=form.license_type icon="chevron-down" %}
+                <div class="alert form-notice" data-license-notice hidden>{% include "components/icon.html" with name="info" %}<p>{{ non_free_notice }}</p></div>
+                {% if similar %}
+                <div class="alert form-notice">{% include "components/icon.html" with name="info" %}<p>Ya existe «{{ similar }}» en tu organización. ¿Querías usar ese? <button class="button button--inline" type="submit" name="use_existing" value="{{ similar.pk }}">Usarlo</button></p></div>
+                {% endif %}
+            </div>
+            <h2 class="section-title section-title--spaced">2. Organización</h2>
+            <div class="field">
+                <label class="field__label" for="organization">Organización</label>
+                <input id="organization" type="text" value="{{ shell_organization }}" readonly>
+                <span class="field__help">Asignada a tu cuenta. Solo un administrador puede cambiarla.</span>
+            </div>
+        </section>
+        <aside class="panel">
+            <h2 class="section-title">Cómo funciona</h2>
+            <ol class="how-it-works">
+                <li><span class="stepper__number">1</span><span><strong>Factores relevantes</strong><br><small>Indicas la importancia de 18 factores · ~15 min</small></span></li>
+                <li><span class="stepper__number">2</span><span><strong>Ponderación</strong><br><small>Calificas los subfactores de los factores relevantes · ~25 min</small></span></li>
+                <li><span class="stepper__number">3</span><span><strong>Resultado</strong><br><small>FODA y recomendación A, B o C · automático</small></span></li>
+            </ol>
+            <div class="alert">{% include "components/icon.html" with name="info" %}<p>Tu avance se guarda solo. Puedes salir y continuar después.</p></div>
+            <a class="link how-it-works__link" href="/ayuda/">Ver la guía completa</a>
+        </aside>
+    </div>
+    <div class="stage-footer">
+        <span class="field__help">* Campos obligatorios</span>
+        <a class="button button--secondary stage-footer__push" href="/">Cancelar</a>
+        <button class="button button--primary" type="submit" data-submit>Comenzar evaluación {% include "components/icon.html" with name="arrow-right" %}</button>
+    </div>
+</form>
+{% endblock %}
+{% block page_scripts %}<script src="{% static 'js/new_evaluation.js' %}" defer></script>{% endblock %}

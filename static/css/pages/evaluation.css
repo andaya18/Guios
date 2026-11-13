@@ -61,6 +61,13 @@
 .how-it-works li { display: grid; grid-template-columns: 28px 1fr; gap: var(--space-3); }
 .how-it-works .stepper__number { width: 28px; height: 28px; }
 .how-it-works small { color: var(--color-muted); font-size: var(--text-xs); }
+.how-it-works strong { color: var(--color-text-strong); font-weight: var(--weight-medium); }
+.how-it-works__link { display: inline-block; margin-top: var(--space-5); }
+.section-title--spaced { margin-top: var(--space-6); }
+.form-notice { margin-bottom: var(--space-4); }
+.page__back { margin-bottom: var(--space-2); text-decoration: none; }
+.stage-footer__push { margin-left: auto; }
+.tabs-toggle input { position: absolute; opacity: 0; pointer-events: none; }
 
 @media (max-width: 1100px) {
     .new-evaluation { grid-template-columns: 1fr; }
@@ -136,3 +143,4 @@
     .results { grid-template-columns: 1fr; }
     .recommendation-card { flex-wrap: wrap; }
 }
+.panel .field, .panel .form-row { margin-bottom: var(--space-4); }

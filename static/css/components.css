@@ -29,6 +29,7 @@
 .button--secondary { border-color: var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .button--secondary:hover { background: var(--color-surface-muted); }
 .button--dark { background: var(--color-text-strong); color: #fff; }
+.button--inline { min-height: 0; padding: 0; border: 0; background: none; color: inherit; font-size: inherit; font-weight: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .button--link { min-height: 0; padding: 0; border: 0; background: none; color: var(--color-primary-strong); font-weight: var(--weight-semibold); }
 
 /* Links */
@@ -69,8 +70,8 @@
 .field select:invalid,
 .field select.is-placeholder { color: var(--color-subtle); }
 .field--invalid input,
-.field--invalid select { border-color: var(--color-error); }
-.errorlist { margin: 0; padding: 0; color: var(--color-error); font-size: var(--text-xs); list-style: none; }
+.field--invalid select { border-color: var(--color-primary); }
+.errorlist { margin: 0; padding: 0; color: var(--color-primary); font-size: var(--text-xs); list-style: none; }
 .form-errors { margin-bottom: var(--space-4); }
 
 /* Checkbox */

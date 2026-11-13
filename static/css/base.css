@@ -21,6 +21,8 @@ img, svg { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: inherit; }
 
+[hidden] { display: none !important; }
+
 .sr-only {
     position: absolute;
     width: 1px;
