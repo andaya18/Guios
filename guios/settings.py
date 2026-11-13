@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "apps.catalog",
     "apps.evaluations",
     "apps.exports",
+    "apps.management",
 ]
 
 MIDDLEWARE = [

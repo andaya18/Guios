@@ -12,12 +12,13 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 ## Tasks
 - T0 [done] Scaffold and register apps catalog/evaluations/exports. Route: orchestrator inline.
 - T1 [in progress] Phase 1 UI fix: tokens, auth layout, A01-A03 copy, base templates T01/T02. S1, S2. Route: orchestrator. Surface: templates/**, static/**, apps/accounts/**.
-- T2 [handoff odd/handoff/T2-catalog.md → session 01a1d178-4969-715f-8948-2cc5bfd5dd1e] Catalog app. S2, S3. Surface: apps/catalog/**.
+- T2 [done b9436a1, 22 tests] Catalog app. S2, S3. Surface: apps/catalog/**.
 - T3 [done, worker mwe1like-2-2mww, 34 tests GREEN] Pure calculation services and tests. S2, S4. Surface: apps/evaluations/services.py, apps/evaluations/tests/**.
-- T4 [pending T2,T3] Evaluation models + D02, E1-E5 with HTMX autosave. S5.
+- T4a [session 2: odd/handoff/T4-evaluations-backend.md] Evaluation models, workflow, permissions, selectors. S2, S4, S5.
+- T4b [orchestrator, after T4a] Views/templates D02, E1-E5 with HTMX autosave. S1, S5.
 - T5 [pending T4] D01, H01-H03, duplicate, delete draft. S5.
 - T6 [pending T4] C01 compare, X01 PDF/CSV export. S5.
-- T7 [pending T2] Admin AD01, U01/U02, O01/O02, M01-M03. S5.
+- T7 [session 3: odd/handoff/T7-admin.md] Admin AD01, U01/U02, O01/O02, M01-M03. S1, S2, S5.
 - T8 [pending] I01 help, G01-G03 error/empty states. S1, S5.
 
 ## Log
@@ -28,3 +29,4 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - L5 (user) "hazlo y a darle con todo al proyecto, hay qcorregir al maximo para q sea perfectamente igual a lo q documentamos y al figma". Decision: add UppercaseDigitValidator so "Mín. 8 caracteres, una mayúscula y un número" is enforced.
 - L6 T1 auth part done (24 accounts tests GREEN, visual diff vs frames). Found and fixed: verification attempts rolled back by @transaction.atomic (unlimited guesses), no AUTH_PASSWORD_VALIDATORS, no 60 s resend cooldown, reset form revealed accounts. Peer sessions never picked up T2/T3 -> reassigned to background workers mwe1lijy-1-59lz (T2) and mwe1like-2-2mww (T3).
 - L7 Catalog data decisions (orchestrator, reversible, pending user confirmation): Soporte default scope = interno (thesis Table 5.4 marks it either; only concrete value is the §6.3 example); scopes identical in v1 and v2; Apoyo=1/Actitud=2 per §4.2; Documentación merged line split; names per §4.2. Commit 189b92e = T1 auth part. Open conflict: Figma AD01 shows registration approval queue, contradicting §6.1 automatic signup -> decide before T7.
+- L8 (user) "continua y dame las tareas para las sesiones 2 y 3". T4 worker failed with no output (session limit) -> T4a to session 2, T7 to session 3. Commits: 189b92e T1-auth, b9436a1 T2, e910ac5 T3, e0049f6 shell+D01. apps/management scaffold mounted at /gestion/.

@@ -34,8 +34,9 @@
         <header class="topbar">
             <div class="topbar__heading">
                 <p class="topbar__title">{% block topbar_title %}Panel de inicio{% endblock %}</p>
-                <p class="topbar__subtitle">{{ shell_organization }} · {% today_long %}</p>
+                <p class="topbar__subtitle">{% block topbar_subtitle %}{{ shell_organization }} · {% today_long %}{% endblock %}</p>
             </div>
+            {% block topbar_tools %}
             <form class="search" role="search" method="get" action="{% block search_action %}/historial/{% endblock %}">
                 {% include "components/icon.html" with name="search" %}
                 <input type="search" name="q" placeholder="Buscar..." aria-label="Buscar" data-search>
@@ -45,6 +46,7 @@
                 <span class="icon-moon">{% include "components/icon.html" with name="moon" %}</span>
                 <span class="icon-sun">{% include "components/icon.html" with name="sun" %}</span>
             </button>
+            {% endblock %}
             {% block topbar_actions %}{% endblock %}
         </header>
         <main class="page">
