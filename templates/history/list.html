@@ -1,0 +1,103 @@
+{% extends "base_decisor.html" %}
+{% load static ui %}
+{% block title %}Historial · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/history.css' %}">{% endblock %}
+{% block topbar_title %}Historial{% endblock %}
+{% block topbar_subtitle %}Evaluaciones / Historial{% endblock %}
+{% block content %}
+<header class="page__header">
+    <h1 class="page__title">Historial de evaluaciones</h1>
+    <p class="page__subtitle">Evaluaciones finalizadas de {{ shell_organization }} y tus borradores.</p>
+</header>
+
+<form class="filters" method="get" data-autosubmit>
+    <div class="toggle toggle--lg" role="group" aria-label="Estado">
+        {% for tab in tabs %}<a class="toggle__item{% if tab.active %} is-active{% endif %}" href="{{ tab.url }}">{{ tab.label }} · {{ tab.count }}</a>{% endfor %}
+    </div>
+    {% if filters.status %}<input type="hidden" name="estado" value="{{ filters.status }}">{% endif %}
+    <input class="filters__search" type="search" name="q" value="{{ filters.query }}" placeholder="Buscar software..." aria-label="Buscar software">
+    <select name="recomendacion" aria-label="Recomendación">
+        <option value="">Recomendación</option>
+        {% for letter, label in recommendation_choices %}<option value="{{ letter }}"{% if filters.recommendation == letter %} selected{% endif %}>{{ letter }} · {{ label }}</option>{% endfor %}
+    </select>
+    <select name="evaluador" aria-label="Evaluador">
+        <option value="">Evaluador</option>
+        {% for person in evaluators %}<option value="{{ person.pk }}"{% if filters.evaluator == person.pk %} selected{% endif %}>{{ person.get_full_name }}</option>{% endfor %}
+    </select>
+    <select name="fecha" aria-label="Fecha">
+        <option value="">Fecha</option>
+        {% for value, label in date_choices %}<option value="{{ value }}"{% if filters.date == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+</form>
+
+<form method="get" action="/comparar/" data-compare-form>
+    <div class="selection-bar" data-selection-bar hidden>
+        <span class="selection-bar__box" aria-hidden="true"></span>
+        <strong><span data-selected-count>0</span> seleccionadas</strong>
+        <span class="selection-bar__hint">Puedes comparar de 2 a 4 evaluaciones finalizadas</span>
+        <button class="button button--secondary selection-bar__clear" type="button" data-clear-selection>Limpiar</button>
+        <button class="button button--primary" type="submit" data-compare-submit><span>Comparar (<span data-selected-count>0</span>)</span></button>
+    </div>
+
+    <section class="panel history">
+        {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th class="history__check"><span class="sr-only">Seleccionar</span></th><th>Software</th><th>Evaluador</th><th>Fecha</th><th>Estado</th><th>Recomendación</th><th>Acciones</th></tr></thead>
+                <tbody>
+                {% for evaluation in page_obj.object_list %}
+                <tr data-row>
+                    <td class="history__check">{% if evaluation.status == "finalizada" %}<input type="checkbox" name="ids" value="{{ evaluation.pk }}" aria-label="Seleccionar {{ evaluation.software }}" data-select>{% endif %}</td>
+                    <td class="history__software">{{ evaluation.software }}</td>
+                    <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ evaluation.author.get_full_name }}</span></td>
+                    <td>{% if evaluation.finished_at %}{{ evaluation.finished_at|short_date }}{% else %}{{ evaluation.updated_at|short_date }}{% endif %}</td>
+                    <td>{% if evaluation.status == "finalizada" %}<span class="pill pill--success">Finalizada</span>{% else %}<span class="pill pill--pending">Borrador · Etapa {{ evaluation.current_step }}</span>{% endif %}</td>
+                    <td>{% if evaluation.recommendation %}<span class="letter" title="{{ evaluation.recommendation|recommendation_name }}">{{ evaluation.recommendation }}</span>{% else %}—{% endif %}</td>
+                    <td>
+                        <div class="row-actions">
+                            {% if evaluation.status == "finalizada" %}
+                            <a class="button button--secondary button--sm" href="{{ evaluation.get_absolute_url }}">Ver</a>
+                            <details class="menu">
+                                <summary class="menu__trigger" aria-label="Más acciones">···</summary>
+                                <div class="menu__list">
+                                    <a href="{{ evaluation.get_absolute_url }}">Ver detalle</a>
+                                    <button type="submit" form="duplicate-{{ evaluation.pk }}">Duplicar para reevaluar</button>
+                                    <button type="button" data-open-modal="export-modal" data-export-url="{% url 'history:export' evaluation.pk %}">Exportar</button>
+                                </div>
+                            </details>
+                            {% else %}
+                            <a class="button button--secondary button--sm" href="{{ evaluation.resume_url }}">Continuar</a>
+                            <details class="menu">
+                                <summary class="menu__trigger" aria-label="Más acciones">···</summary>
+                                <div class="menu__list">
+                                    <a href="{{ evaluation.resume_url }}">Continuar</a>
+                                    <button type="button" data-open-modal="delete-modal" data-delete-url="{% url 'history:delete' evaluation.pk %}" data-delete-name="{{ evaluation.software }}" data-delete-step="{{ evaluation.current_step }}" data-delete-date="{{ evaluation.updated_at|short_date }}">Eliminar borrador</button>
+                                </div>
+                            </details>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <footer class="history__footer">
+            <span>Mostrando {{ page_obj.object_list|length }} de {{ page_obj.paginator.count }}</span>
+            {% if page_obj.paginator.num_pages > 1 %}{% include "components/pagination.html" %}{% endif %}
+        </footer>
+        {% else %}
+        {% include "components/empty.html" with title="Aún no hay evaluaciones" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url="/evaluaciones/nueva/" action_label="+ Nueva evaluación" %}
+        {% endif %}
+    </section>
+</form>
+{% for evaluation in page_obj.object_list %}{% if evaluation.status == "finalizada" %}
+<form id="duplicate-{{ evaluation.pk }}" method="post" action="{% url 'history:duplicate' evaluation.pk %}" hidden>{% csrf_token %}</form>
+{% endif %}{% endfor %}
+<p class="history__note">Los borradores de otros usuarios no se listan. Editar y eliminar solo aplican a evaluaciones propias.</p>
+{% endblock %}
+{% block modals %}
+{% include "history/partials/delete_modal.html" %}
+{% include "history/partials/export_modal.html" %}
+{% endblock %}
+{% block page_scripts %}<script src="{% static 'js/evaluation.js' %}" defer></script><script src="{% static 'js/history.js' %}" defer></script>{% endblock %}

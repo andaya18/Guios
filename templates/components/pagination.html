@@ -1,0 +1,7 @@
+<nav class="pagination" aria-label="Paginación">
+    {% if page_obj.has_previous %}<a href="?{{ querystring_base }}page={{ page_obj.previous_page_number }}" aria-label="Página anterior">‹</a>{% else %}<span class="is-disabled" aria-hidden="true">‹</span>{% endif %}
+    {% for number in page_obj.paginator.page_range %}
+    {% if number == page_obj.number %}<span class="is-current" aria-current="page">{{ number }}</span>{% else %}<a href="?{{ querystring_base }}page={{ number }}">{{ number }}</a>{% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}<a href="?{{ querystring_base }}page={{ page_obj.next_page_number }}" aria-label="Página siguiente">›</a>{% else %}<span class="is-disabled" aria-hidden="true">›</span>{% endif %}
+</nav>

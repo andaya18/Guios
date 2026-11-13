@@ -136,6 +136,7 @@
 .pill--draft { background: var(--color-primary-soft); color: var(--color-primary-strong); }
 .pill--neutral { background: var(--color-surface-muted); color: var(--color-text-secondary); }
 .pill--danger { background: var(--color-error-soft); color: var(--color-error); }
+.pill--pending { border: 1px dashed var(--color-border-strong); background: var(--color-surface); color: var(--color-text-secondary); }
 .pill--dark { background: var(--color-text-strong); color: #fff; }
 
 /* Progress */

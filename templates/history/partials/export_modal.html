@@ -1,0 +1,21 @@
+<div class="modal" id="export-modal" role="dialog" aria-modal="true" aria-labelledby="export-title" hidden>
+    <form class="modal__dialog modal__dialog--start" method="get" data-export-form{% if export_url %} action="{{ export_url }}"{% endif %}>
+        <h2 class="modal__title" id="export-title">Exportar evaluación</h2>
+        <p class="modal__text modal__text--sm" data-export-label>{{ export_label }}</p>
+        <div class="choice-cards">
+            <label class="choice-card"><input type="radio" name="formato" value="pdf" checked><span><strong>PDF</strong><small>Informe para presentar</small></span></label>
+            <label class="choice-card"><input type="radio" name="formato" value="csv"><span><strong>CSV</strong><small>Datos para analizar en hoja de cálculo</small></span></label>
+        </div>
+        <fieldset class="checklist" data-pdf-only>
+            <legend>Contenido a incluir</legend>
+            <label class="checkbox"><input type="checkbox" name="incluir" value="recomendacion" checked> Recomendación y factores que la sustentan</label>
+            <label class="checkbox"><input type="checkbox" name="incluir" value="foda" checked> Matriz FODA</label>
+            <label class="checkbox"><input type="checkbox" name="incluir" value="detalle" checked> Detalle por factor (PM, alcance, FODA)</label>
+            <label class="checkbox"><input type="checkbox" name="incluir" value="respuestas"> Respuestas de todos los subfactores</label>
+        </fieldset>
+        <div class="modal__actions">
+            <button class="button button--secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="button button--primary" type="submit" data-export-submit>Descargar PDF</button>
+        </div>
+    </form>
+</div>
