@@ -385,3 +385,44 @@ class AdminMailSettingsTests(TestCase):
         self.client.force_login(decisor)
 
         self.assertEqual(self.client.post("/cuenta/configuracion/correo-de-prueba/").status_code, 403)
+
+
+class DjangoAdminUserTests(TestCase):
+    def setUp(self):
+        self.superuser = User.objects.create_superuser(email="gabriela@unemi.edu.ec", password="Correcta123")
+        self.client.force_login(self.superuser)
+
+    def test_change_page_has_email_and_name_but_no_username(self):
+        response = self.client.get(f"/admin/accounts/user/{self.superuser.pk}/change/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="email"')
+        self.assertContains(response, 'name="first_name"')
+        self.assertNotContains(response, 'name="username"')
+
+    def test_add_page_and_search_work(self):
+        self.assertEqual(self.client.get("/admin/accounts/user/add/").status_code, 200)
+        self.assertEqual(self.client.get("/admin/accounts/user/?q=gabriela").status_code, 200)
+
+    def test_admin_can_set_name_from_change_page(self):
+        url = f"/admin/accounts/user/{self.superuser.pk}/change/"
+        data = {
+            "email": "gabriela@unemi.edu.ec", "first_name": "Gabriela", "last_name": "Andagoya",
+            "role": "administrador", "area": "", "is_active": "on", "is_staff": "on", "is_superuser": "on",
+            "last_login_0": "", "last_login_1": "", "date_joined_0": "2026-11-14", "date_joined_1": "10:00:00",
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        self.superuser.refresh_from_db()
+        self.assertEqual(self.superuser.get_full_name(), "Gabriela Andagoya")
+
+    def test_add_user_creates_account_with_email(self):
+        response = self.client.post("/admin/accounts/user/add/", {
+            "email": "nuevo@unemi.edu.ec", "password1": "Segura2026x", "password2": "Segura2026x",
+            "role": "administrador", "usable_password": "true",
+        })
+
+        self.assertEqual(response.status_code, 302, response.content.decode()[:800])
+        self.assertTrue(User.objects.get(email="nuevo@unemi.edu.ec").check_password("Segura2026x"))
