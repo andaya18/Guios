@@ -112,6 +112,8 @@ def _assessment_for(document, verifier):
 def _valid_citations_per_factor(documents, assessments):
     counts = {}
     for document in documents:
+        if document.pk not in assessments:
+            continue
         valid = {item["subfactor_id"] for item in assessments[document.pk].scores if item["score"] >= VALID_MIN_SCORE}
         for citation in document.citations.all():
             if citation.subfactor_id in valid:
@@ -163,7 +165,10 @@ def compute(verifier=None, force=False):
         return existing.filter(origin="respaldo").first() or _fallback_run(hash_, documents, reason)
 
     try:
-        assessments = {document.pk: _assessment_for(document, verifier) for document in documents}
+        # A document without citations adds nothing to TC, so it is never sent to the AI.
+        assessments = {
+            document.pk: _assessment_for(document, verifier) for document in documents if document.citations.all()
+        }
     except AIUnavailable as error:
         return existing.filter(origin="respaldo", error=str(error)[:300]).first() or _fallback_run(hash_, documents, str(error))
 
@@ -185,3 +190,51 @@ def compute(verifier=None, force=False):
     if differing:
         logger.info("Importancia sugerida por IA distinta del respaldo en: %s", ", ".join(differing))
     return run
+
+
+# ---------- screen helpers ----------
+
+class DraftNotAllowed(Exception):
+    pass
+
+
+def latest_assessments():
+    """Most recent stored verdict per document, keyed by document id (for the trace on screen)."""
+    latest = {}
+    for assessment in DocumentAssessment.objects.order_by("document_id", "-created_at"):
+        latest.setdefault(assessment.document_id, assessment)
+    return latest
+
+
+def unique_key(authors, year):
+    """'perez-2024' from 'Pérez et al.' + 2024, with -b, -c... when taken."""
+    from django.utils.text import slugify
+
+    surname = slugify(authors.replace(" et al.", "").split(" y ")[0].split(",")[0]).split("-")[0] or "documento"
+    base = f"{surname}-{year}"
+    key, suffix = base, ord("b")
+    while Document.objects.filter(key=key).exists():
+        key, suffix = f"{base}-{chr(suffix)}", suffix + 1
+    return key
+
+
+@transaction.atomic
+def create_document(data, subfactors):
+    document = Document.objects.create(key=unique_key(data["authors"], data["year"]), **data)
+    Citation.objects.bulk_create(Citation(document=document, subfactor=subfactor) for subfactor in subfactors)
+    return document
+
+
+@transaction.atomic
+def apply_to_draft(run):
+    """Copy AI-computed IS into the catalog draft; publishing still needs justification and authorization (M02)."""
+    from apps.catalog.models import FactorVersion
+    from apps.management import services as catalog
+
+    if run.origin != "ia":
+        raise DraftNotAllowed("Solo se puede crear un borrador con valores calculados por la IA.")
+    draft = catalog.create_draft()
+    scopes = dict(FactorVersion.objects.filter(version=draft).values_list("factor_id", "default_scope"))
+    for row in run.factors.select_related("factor"):
+        catalog.update_draft_factor(draft, row.factor, row.value, scopes[row.factor_id])
+    return draft

@@ -14,14 +14,15 @@ Formula (doc/sugerida.pdf): r = TC / NS; IL = quartile of r over the 18 factors 
 - S9 "Integra el proveedor de IA mediante una clave en variables de entorno (nunca en el código)." "Aísla la lógica en un servicio ... para poder cambiar de proveedor fácilmente."
 
 ## Tasks
-- T1 [pending] Pure formulas (quartile inclusive, IL, IS) in evaluations/services.py + tests with thesis Table 13 and update Table 15/17. S1. Route: inline.
-- T2 [pending] Literature data: Table 14 (13 documents, 71 citations) to apps/literature/data/literatura_2020_2025.json + fallback IS (Table 17) in respaldo_is.json. S2, S8. Route: background worker (extraction).
-- T3 [pending] apps/literature models (Document, Citation, DocumentAssessment, ISComputation, FactorIS), hashing, compute service with cache/fallback/discrepancy + tests. S3, S5, S6, S7, S8. Route: inline.
-- T4 [pending] Gemini verifier in apps/ai (stdlib HTTP, googleSearch + JSON schema, strict validation, error mapping) + tests. S2, S4, S6, S9. Route: inline.
-- T5 [pending] Command + admin UI (literature list, add/remove document/citation, results with IA/Respaldo badge, create catalog draft from IS) + docs. S3, S5, S8. Route: inline.
+- T1 [done 00ca93f] Pure formulas (quartile inclusive, IL, IS) + tests reproducing Tables 13, 16, 17. S1.
+- T2 [done 00ca93f] Table 14 data (13 documents, 71 citations, 37 subfactors) + fallback IS (Table 17 = catalog v2). S2, S8.
+- T3 [done 0261c32] apps/literature: models, hashes, compute with cache/fallback/discrepancy, loader + compute commands. S3, S5, S6, S7, S8.
+- T4 [done 0261c32] Gemini verifier (googleSearch + JSON schema, strict validation, error mapping). S2, S4, S6, S9.
+- T5 [in progress] Admin tab "Importancia sugerida": IS table with IA/Respaldo origin, documents and citations with scores and sources, add/delete, recalculate, draft catalog version. S3, S5, S8.
 
 ## Log
 - L1 (user) request of 2026-11-14 with sections 1-4 (IS with AI, AI API, SMTP, closing checklist); formula source doc/sugerida.pdf.
 - L2 Design agreed: AI validates each citation of Table 14 against the web using the review's inclusion criteria as rubric; IL/IS computed by the thesis formulas; IS feeds a catalog draft version (formal validation via M02). Replaces the per-evaluation IS idea.
 - L3 (user, verbatim) "perfecto, ten en cuenta q la is debe ser calculada automáticamente con la IA  puede hacerlo con las formulas descritas, así queda perfecto, entonces continuemos con eso para terminar todo"
 - L4 Gemini docs: structured output + googleSearch only on Gemini 3+; Google recommends temperature 1.0 for Gemini 3 -> AI_TEMPERATURE configurable, default 0 per S3; repeatability guaranteed by hash cache.
+- L5 Subagent runtime unavailable (spawn pi ENOENT): T2 extracted inline. Documents without citations are never sent to the AI (found by view test).
