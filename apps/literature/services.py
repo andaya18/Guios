@@ -13,7 +13,7 @@ from pathlib import Path
 from django.conf import settings
 from django.db import transaction
 
-from apps.ai.verification import RUBRIC_VERSION, VALID_MIN_SCORE, AIUnavailable, get_verifier
+from apps.ai.verification import RUBRIC_VERSION, AIUnavailable, get_verifier, is_valid_score
 from apps.catalog.models import Factor, Subfactor
 from apps.evaluations import services as formulas
 
@@ -114,7 +114,7 @@ def _valid_citations_per_factor(documents, assessments):
     for document in documents:
         if document.pk not in assessments:
             continue
-        valid = {item["subfactor_id"] for item in assessments[document.pk].scores if item["score"] >= VALID_MIN_SCORE}
+        valid = {item["subfactor_id"] for item in assessments[document.pk].scores if is_valid_score(item["score"])}
         for citation in document.citations.all():
             if citation.subfactor_id in valid:
                 counts[citation.subfactor.factor_id] = counts.get(citation.subfactor.factor_id, 0) + 1

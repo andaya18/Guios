@@ -12,6 +12,12 @@ RUBRIC_VERSION = "2026-11-rubrica-1"
 VALID_MIN_SCORE = 2  # citations scored 2 or 3 count for TC
 SCORES = (0, 1, 2, 3)
 MAX_JUSTIFICATION = 400
+MAX_SCORE = max(SCORES)
+
+
+def is_valid_score(score):
+    """Single definition of a citation that counts for TC."""
+    return score >= VALID_MIN_SCORE
 
 RUBRIC = """Rúbrica de relevancia de cada cita (puntaje entero de 0 a 3):
 3 = El documento existe, se publicó entre 2020 y 2025, tiene revisión por pares, trata la adopción
@@ -43,7 +49,7 @@ class CitationScore:
 
     @property
     def is_valid(self):
-        return self.score >= VALID_MIN_SCORE
+        return is_valid_score(self.score)
 
 
 @dataclass(frozen=True)

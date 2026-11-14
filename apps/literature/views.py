@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from apps.ai.verification import VALID_MIN_SCORE
+from apps.ai.verification import MAX_SCORE, VALID_MIN_SCORE, is_valid_score
 from apps.management.permissions import AdministratorRequiredMixin
 from apps.management.selectors import catalog_counts
 from apps.management.views import catalog_url
@@ -17,7 +17,7 @@ PAGE = "management:suggested_importance"
 
 def _citation_entry(citation, verdict):
     """The validity threshold lives in VALID_MIN_SCORE; the template only shows the result."""
-    return {"citation": citation, "verdict": verdict, "is_valid": bool(verdict) and verdict["score"] >= VALID_MIN_SCORE}
+    return {"citation": citation, "verdict": verdict, "is_valid": bool(verdict) and is_valid_score(verdict["score"])}
 
 
 class SuggestedImportanceView(AdministratorRequiredMixin, View):
@@ -42,6 +42,7 @@ class SuggestedImportanceView(AdministratorRequiredMixin, View):
             "documents": documents,
             "form": form,
             "valid_min_score": VALID_MIN_SCORE,
+            "max_score": MAX_SCORE,
             "section": "importance",
             "catalog_url": catalog_url(),
             **catalog_counts(),
