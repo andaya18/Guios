@@ -1,0 +1,66 @@
+{% extends shell_base %}
+{% load static %}
+{% block title %}Configuración · GUIOS PRO{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{% static 'css/pages/profile.css' %}">{% endblock %}
+{% block topbar_title %}Configuración{% endblock %}
+{% block topbar_subtitle %}Cuenta / Configuración{% endblock %}
+{% block content %}
+<header class="page__header">
+    <h1 class="page__title">Configuración</h1>
+    <p class="page__subtitle">Administra tu perfil y las preferencias de la aplicación.</p>
+</header>
+
+<form method="post" novalidate class="profile">
+    {% csrf_token %}
+    <section class="panel">
+        <h2 class="panel__title profile__title">Preferencias</h2>
+        <p class="field__label">Apariencia</p>
+        <div class="theme-choice" role="radiogroup" aria-label="Apariencia">
+            <button type="button" class="theme-choice__option" data-theme-option="light" role="radio">{% include "components/icon.html" with name="sun" %}Claro</button>
+            <button type="button" class="theme-choice__option" data-theme-option="dark" role="radio">{% include "components/icon.html" with name="moon" %}Oscuro</button>
+        </div>
+    </section>
+
+    <div class="profile__grid">
+        <section class="panel">
+            <h2 class="panel__title profile__title">Información personal</h2>
+            <div class="form-row">
+                {% include "components/field.html" with field=form.first_name %}
+                {% include "components/field.html" with field=form.last_name %}
+            </div>
+            <div class="field">
+                <label class="field__label" for="profile-email">Correo institucional</label>
+                <div class="field__control"><input id="profile-email" type="text" value="{{ request.user.email }}" readonly>{% include "components/icon.html" with name="lock" %}</div>
+                <span class="field__help">El correo identifica tu cuenta y tu organización; no se puede modificar.</span>
+            </div>
+            {% include "components/field.html" with field=form.area %}
+        </section>
+
+        {% if mail %}
+        <section class="panel">
+            <h2 class="panel__title profile__title">Correo de verificación</h2>
+            <div class="field"><span class="field__label">Modo de envío</span><div class="field__control"><input type="text" value="{{ mail.mode }}" readonly aria-label="Modo de envío">{% include "components/icon.html" with name="lock" %}</div></div>
+            {% if mail.is_real %}
+            <div class="field"><span class="field__label">Servidor</span><div class="field__control"><input type="text" value="{{ mail.server }}{% if mail.tls %} · TLS{% endif %}" readonly aria-label="Servidor">{% include "components/icon.html" with name="lock" %}</div></div>
+            <div class="field"><span class="field__label">Cuenta remitente</span><div class="field__control"><input type="text" value="{{ mail.user }}" readonly aria-label="Cuenta remitente">{% include "components/icon.html" with name="lock" %}</div></div>
+            {% endif %}
+            <p class="profile__note">{% include "components/icon.html" with name="info" %}{{ mail.detail }}</p>
+            <button class="button button--secondary profile__test" type="submit" formaction="{% url 'accounts:send_test_email' %}">Enviar correo de prueba</button>
+        </section>
+        {% elif organization %}
+        <section class="panel">
+            <h2 class="panel__title profile__title">Organización</h2>
+            <div class="field"><span class="field__label">Organización</span><div class="field__control"><input type="text" value="{{ organization.name }}" readonly aria-label="Organización">{% include "components/icon.html" with name="lock" %}</div></div>
+            <div class="field"><span class="field__label">Dominio</span><div class="field__control"><input type="text" value="{{ organization.domain }}" readonly aria-label="Dominio">{% include "components/icon.html" with name="lock" %}</div></div>
+            <div class="field"><span class="field__label">Tipo</span><div class="field__control"><input type="text" value="{% if organization.sector == 'publico' %}Pública{% else %}Privada{% endif %}" readonly aria-label="Tipo">{% include "components/icon.html" with name="lock" %}</div></div>
+            <p class="profile__note">{% include "components/icon.html" with name="info" %}Tu organización se asigna según el dominio de tu correo y no se cambia aquí.</p>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="profile__actions">
+        <a class="button button--secondary" href="{{ shell_home }}">Cancelar</a>
+        <button class="button button--primary" type="submit">Guardar cambios</button>
+    </div>
+</form>
+{% endblock %}

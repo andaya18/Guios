@@ -1,0 +1,20 @@
+/* Cuenta / Configuración */
+.profile { display: grid; gap: var(--space-5); }
+.profile__title { margin-bottom: var(--space-4); }
+.profile__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); align-items: stretch; }
+.profile__grid .field, .profile__grid .form-row { margin-bottom: var(--space-4); }
+.profile__note { display: flex; gap: var(--space-2); color: var(--color-muted); font-size: var(--text-xs); }
+.profile__note svg { width: 14px; height: 14px; flex: none; }
+.profile__test { margin-top: var(--space-4); }
+.profile__actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
+.profile__actions .button { min-width: 104px; min-height: 44px; }
+.profile__actions .button--primary { min-width: 196px; font-weight: var(--weight-semibold); }
+
+.theme-choice { display: flex; gap: var(--space-3); margin-top: var(--space-2); }
+.theme-choice__option { display: flex; align-items: center; gap: var(--space-3); width: 168px; height: 42px; padding: 0 var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-size: var(--text-md); cursor: pointer; }
+.theme-choice__option svg { width: 18px; height: 18px; }
+.theme-choice__option.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-strong); font-weight: var(--weight-semibold); }
+
+@media (max-width: 960px) {
+    .profile__grid { grid-template-columns: 1fr; }
+}

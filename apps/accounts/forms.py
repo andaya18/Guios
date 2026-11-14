@@ -123,3 +123,20 @@ class GuiosPasswordResetForm(PasswordResetForm):
 class GuiosSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(label="Nueva contraseña", widget=password_input(), strip=False)
     new_password2 = forms.CharField(label="Confirmar", widget=password_input(), strip=False)
+
+
+class ProfileForm(forms.ModelForm):
+    """Editable profile fields; email and organization are fixed by the signup domain (§6.1)."""
+
+    first_name = forms.CharField(label="Nombre", max_length=75)
+    last_name = forms.CharField(label="Apellido", max_length=75, required=False)
+    area = forms.CharField(
+        label="Área o cargo (opcional)",
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Ej. Dirección TIC"}),
+    )
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "area"]

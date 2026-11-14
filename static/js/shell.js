@@ -12,10 +12,22 @@
         store.set("guios-sidebar", collapsed ? "collapsed" : "expanded");
     });
 
+    // One place applies the theme so the top bar toggle and the profile choice stay in sync.
+    const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        store.set("guios-theme", theme);
+        document.querySelectorAll("[data-theme-option]").forEach((option) => {
+            const active = option.dataset.themeOption === theme;
+            option.classList.toggle("is-active", active);
+            option.setAttribute("aria-checked", String(active));
+        });
+    };
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
     document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
-        const root = document.documentElement;
-        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-        store.set("guios-theme", root.dataset.theme);
+        applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+    });
+    document.querySelectorAll("[data-theme-option]").forEach((option) => {
+        option.addEventListener("click", () => applyTheme(option.dataset.themeOption));
     });
 
     const search = document.querySelector("[data-search]");

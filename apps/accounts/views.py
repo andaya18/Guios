@@ -2,6 +2,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
 from django.contrib.auth.views import (
     LoginView,
     PasswordResetConfirmView,
@@ -15,6 +18,7 @@ from django.urls import reverse_lazy
 from apps.evaluations.selectors import decisor_dashboard
 
 from .forms import (
+    ProfileForm,
     GuiosPasswordResetForm,
     GuiosSetPasswordForm,
     LoginForm,
@@ -22,6 +26,7 @@ from .forms import (
     SignupForm,
     VerificationForm,
 )
+from .mail_status import mail_status
 from .models import PendingSignup, User
 from .services import (
     active_organization_for_email,
@@ -160,3 +165,39 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
     def get_success_url(self):
         return home_url_for(self.user)
 
+
+
+@login_required
+def profile(request):
+    """Cuenta / Configuración: name, area and appearance; admins also see the mail status."""
+    form = ProfileForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Cambios guardados.")
+        return redirect("accounts:profile")
+    is_admin = request.user.role == "administrador"
+    return render(request, "accounts/profile.html", {
+        "form": form,
+        "organization": request.user.organization,
+        "mail": mail_status() if is_admin else None,
+    })
+
+
+@login_required
+@require_POST
+def send_test_email(request):
+    """Lets an administrator confirm that verification codes are being delivered."""
+    if request.user.role != "administrador":
+        raise PermissionDenied
+    try:
+        send_mail(
+            "Correo de prueba de GUIOS PRO",
+            "Si recibes este mensaje, los códigos de verificación se están enviando correctamente.",
+            None,
+            [request.user.email],
+        )
+    except Exception as error:  # SMTP errors vary by provider; show the reason to the admin.
+        messages.error(request, f"No se pudo enviar el correo de prueba: {error}")
+    else:
+        messages.success(request, f"Correo de prueba enviado a {request.user.email}.")
+    return redirect("accounts:profile")

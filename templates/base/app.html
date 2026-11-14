@@ -21,7 +21,7 @@
         <div class="sidebar__user">
             <span class="avatar" aria-hidden="true"></span>
             <div class="sidebar__user-text">
-                <p class="sidebar__user-name">{{ request.user.get_full_name|default:request.user.email }}</p>
+                <a class="sidebar__user-name" href="{% url 'accounts:profile' %}" title="Configuración">{{ request.user.get_full_name|default:request.user.email }}</a>
                 <p class="sidebar__user-meta">{% block user_meta %}{{ shell_role }}{% endblock %}</p>
             </div>
             <form method="post" action="{% url 'accounts:logout' %}">

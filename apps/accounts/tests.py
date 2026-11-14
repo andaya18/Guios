@@ -304,3 +304,84 @@ class PasswordResetTests(TestCase):
 
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
+
+
+class ProfileTests(TestCase):
+    def setUp(self):
+        self.organization = Organization.objects.create(name="UNEMI", domain="unemi.edu.ec", sector="publico")
+        self.user = User.objects.create_user(
+            email="maria@unemi.edu.ec", password="Correcta123", first_name="María", last_name="Pérez",
+            organization=self.organization,
+        )
+        self.client.force_login(self.user)
+
+    def test_requires_login(self):
+        self.client.logout()
+
+        self.assertRedirects(self.client.get("/cuenta/configuracion/"), "/acceso/?next=/cuenta/configuracion/", fetch_redirect_response=False)
+
+    def test_page_matches_figma_copy(self):
+        response = self.client.get("/cuenta/configuracion/")
+
+        for text in ("Configuración", "Administra tu perfil y las preferencias de la aplicación.", "Preferencias",
+                     "Apariencia", "Claro", "Oscuro", "Información personal", "Correo institucional",
+                     "El correo identifica tu cuenta y tu organización; no se puede modificar.", "Organización",
+                     "unemi.edu.ec", "Pública", "Tu organización se asigna según el dominio de tu correo y no se cambia aquí.",
+                     "Guardar cambios", "Cancelar"):
+            self.assertContains(response, text)
+
+    def test_saves_name_and_area_but_never_email(self):
+        response = self.client.post("/cuenta/configuracion/", {
+            "first_name": "Mariela", "last_name": "Paz", "area": "Dirección TIC", "email": "otro@gmail.com",
+        })
+
+        self.assertRedirects(response, "/cuenta/configuracion/")
+        self.user.refresh_from_db()
+        self.assertEqual((self.user.first_name, self.user.last_name, self.user.area, self.user.email),
+                         ("Mariela", "Paz", "Dirección TIC", "maria@unemi.edu.ec"))
+
+    def test_name_is_required(self):
+        response = self.client.post("/cuenta/configuracion/", {"first_name": "", "last_name": "Paz"})
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, "María")
+
+
+class AdminMailSettingsTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(email="admin@guios.local", password="Correcta123", first_name="Carlos", role="administrador")
+        self.client.force_login(self.admin)
+
+    def test_admin_sees_mail_status_without_password(self):
+        from django.test import override_settings
+
+        with override_settings(EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend", EMAIL_HOST="smtp.gmail.com",
+                               EMAIL_PORT=587, EMAIL_HOST_USER="codigos@unemi.edu.ec", EMAIL_HOST_PASSWORD="super-secreta"):
+            response = self.client.get("/cuenta/configuracion/")
+
+        self.assertContains(response, "Correo de verificación")
+        self.assertContains(response, "smtp.gmail.com:587")
+        self.assertContains(response, "codigos@unemi.edu.ec")
+        self.assertNotContains(response, "super-secreta")
+        self.assertNotContains(response, "Tu organización se asigna")
+
+    def test_console_backend_is_explained(self):
+        response = self.client.get("/cuenta/configuracion/")
+
+        self.assertContains(response, "Modo desarrollo: los códigos se muestran en la terminal del servidor.")
+
+    def test_send_test_email_to_admin(self):
+        from django.core import mail
+
+        response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["admin@guios.local"])
+        self.assertContains(response, "Correo de prueba enviado a admin@guios.local.")
+
+    def test_decisor_cannot_send_test_email(self):
+        decisor = User.objects.create_user(email="ana@x.edu.ec", password="Correcta123", first_name="Ana")
+        self.client.force_login(decisor)
+
+        self.assertEqual(self.client.post("/cuenta/configuracion/correo-de-prueba/").status_code, 403)
