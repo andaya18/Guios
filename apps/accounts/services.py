@@ -25,6 +25,25 @@ VERIFICATION_TTL = timedelta(minutes=10)
 RESEND_COOLDOWN = timedelta(seconds=60)
 
 
+VERIFICATION_SUBJECT = "Código de verificación de GUIOS PRO"
+
+
+def new_code():
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def send_verification_email(email, code):
+    """The only place that writes the verification email (signup, resend and the admin test)."""
+    send_mail(
+        VERIFICATION_SUBJECT,
+        f"Tu código de verificación es: {code}\n\n"
+        f"Vence en {int(VERIFICATION_TTL.total_seconds() // 60)} minutos. "
+        "Si no solicitaste una cuenta en GUIOS PRO, ignora este correo.",
+        None,
+        [email],
+    )
+
+
 def normalize_email(email):
     return email.strip().lower()
 
@@ -35,7 +54,7 @@ def email_domain(email):
 
 def create_pending_signup(email, first_name, last_name, password):
     normalized_email = normalize_email(email)
-    code = f"{secrets.randbelow(1_000_000):06d}"
+    code = new_code()
     pending, _ = PendingSignup.objects.update_or_create(
         email=normalized_email,
         defaults={
@@ -46,12 +65,7 @@ def create_pending_signup(email, first_name, last_name, password):
             "attempts": 0,
         },
     )
-    send_mail(
-        "Código de verificación de GUIOS PRO",
-        f"Tu código de verificación es: {code}",
-        None,
-        [pending.email],
-    )
+    send_verification_email(pending.email, code)
     return pending
 
 
@@ -66,17 +80,12 @@ def resend_pending_signup_code(pending):
     wait = seconds_until_resend(pending)
     if wait:
         raise ValueError(f"Podrás solicitar un nuevo código en {wait} segundos.")
-    code = f"{secrets.randbelow(1_000_000):06d}"
+    code = new_code()
     pending.code_hash = make_password(code)
     pending.expires_at = timezone.now() + VERIFICATION_TTL
     pending.attempts = 0
     pending.save(update_fields=["code_hash", "expires_at", "attempts"])
-    send_mail(
-        "Código de verificación de GUIOS PRO",
-        f"Tu nuevo código de verificación es: {code}",
-        None,
-        [pending.email],
-    )
+    send_verification_email(pending.email, code)
 
 
 def verify_pending_signup(pending, code):

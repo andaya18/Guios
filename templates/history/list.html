@@ -50,7 +50,7 @@
                 <tr data-row>
                     <td class="history__check">{% if evaluation.status == "finalizada" %}<input type="checkbox" name="ids" value="{{ evaluation.pk }}" aria-label="Seleccionar {{ evaluation.software }}" data-select>{% endif %}</td>
                     <td class="history__software">{{ evaluation.software }}</td>
-                    <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ evaluation.author.get_full_name }}</span></td>
+                    <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true">{{ evaluation.author|initials }}</span>{{ evaluation.author.get_full_name }}</span></td>
                     <td>{% if evaluation.finished_at %}{{ evaluation.finished_at|short_date }}{% else %}{{ evaluation.updated_at|short_date }}{% endif %}</td>
                     <td>{% if evaluation.status == "finalizada" %}<span class="pill pill--success">Finalizada</span>{% else %}<span class="pill pill--pending">Borrador · Etapa {{ evaluation.current_step }}</span>{% endif %}</td>
                     <td>{% if evaluation.recommendation %}<span class="letter" title="{{ evaluation.recommendation|recommendation_name }}">{{ evaluation.recommendation }}</span>{% else %}—{% endif %}</td>

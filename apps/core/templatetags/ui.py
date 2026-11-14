@@ -82,3 +82,11 @@ def saved_at(value):
     local = timezone.localtime(value)
     day = "hoy" if local.date() == timezone.localdate() else date_format(local, "d/m/Y")
     return f"{day} {date_format(local, 'H:i')}"
+
+
+@register.filter
+def initials(user):
+    """'GA' for Gabriela Andagoya; first letter of the email when the user has no name."""
+    parts = [part for part in (getattr(user, "first_name", ""), getattr(user, "last_name", "")) if part]
+    letters = "".join(part.strip()[0] for part in parts if part.strip())
+    return (letters or (getattr(user, "email", "") or "?")[0]).upper()[:2]

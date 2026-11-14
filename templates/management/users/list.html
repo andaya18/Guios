@@ -1,5 +1,5 @@
 {% extends "management/base.html" %}
-{% load management_ui %}
+{% load management_ui ui %}
 {% block title %}Usuarios · GUIOS PRO{% endblock %}
 {% block topbar_title %}Usuarios{% endblock %}
 {% block topbar_subtitle %}Administración / Usuarios{% endblock %}
@@ -36,7 +36,7 @@
             <tbody>
             {% for user in users %}
             <tr>
-                <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ user.get_full_name|default:user.email }}</span></td>
+                <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true">{{ user|initials }}</span>{{ user.get_full_name|default:user.email }}</span></td>
                 <td>{{ user.email }}</td>
                 <td>{% if user.role == "administrador" %}<span class="pill pill--dark">Administrador</span>{% else %}<span class="pill pill--neutral">Decisor</span>{% endif %}</td>
                 <td>{{ user.organization.name|default:"—" }}</td>

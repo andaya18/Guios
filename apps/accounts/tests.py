@@ -374,11 +374,12 @@ class AdminMailSettingsTests(TestCase):
     def test_send_test_email_to_admin(self):
         from django.core import mail
 
-        response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
+        with patch("apps.accounts.views.mail_status", return_value={"is_real": True}):
+            response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["admin@guios.local"])
-        self.assertContains(response, "Correo de prueba enviado a admin@guios.local.")
+        self.assertContains(response, "Correo de prueba enviado a admin@guios.local. Revisa también la carpeta de spam.")
 
     def test_decisor_cannot_send_test_email(self):
         decisor = User.objects.create_user(email="ana@x.edu.ec", password="Correcta123", first_name="Ana")
@@ -421,8 +422,86 @@ class DjangoAdminUserTests(TestCase):
     def test_add_user_creates_account_with_email(self):
         response = self.client.post("/admin/accounts/user/add/", {
             "email": "nuevo@unemi.edu.ec", "password1": "Segura2026x", "password2": "Segura2026x",
-            "role": "administrador", "usable_password": "true",
+            "role": "administrador",
         })
 
         self.assertEqual(response.status_code, 302, response.content.decode()[:800])
         self.assertTrue(User.objects.get(email="nuevo@unemi.edu.ec").check_password("Segura2026x"))
+
+
+class VerificationEmailPathTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(email="admin@guios.local", password="Correcta123", first_name="Carlos", role="administrador")
+        self.client.force_login(self.admin)
+
+    def test_test_email_uses_the_real_verification_template(self):
+        from django.core import mail
+
+        self.client.post("/cuenta/configuracion/correo-de-prueba/", {"recipient": "gabriela@unemi.edu.ec"})
+
+        self.assertEqual(mail.outbox[0].to, ["gabriela@unemi.edu.ec"])
+        self.assertEqual(mail.outbox[0].subject, "Código de verificación de GUIOS PRO")
+        self.assertRegex(mail.outbox[0].body, r"Tu código de verificación es: \d{6}")
+
+    def test_signup_and_test_email_share_the_same_message(self):
+        from django.core import mail
+
+        with patch("apps.accounts.services.secrets.randbelow", return_value=123456):
+            self.client.post("/registro/", SIGNUP_DATA)
+
+        self.assertEqual(mail.outbox[0].subject, "Código de verificación de GUIOS PRO")
+        self.assertIn("Tu código de verificación es: 123456", mail.outbox[0].body)
+
+    def test_recipient_defaults_to_admin_email(self):
+        from django.core import mail
+
+        self.client.post("/cuenta/configuracion/correo-de-prueba/")
+
+        self.assertEqual(mail.outbox[0].to, ["admin@guios.local"])
+
+    def test_invalid_recipient_is_rejected(self):
+        from django.core import mail
+
+        response = self.client.post("/cuenta/configuracion/correo-de-prueba/", {"recipient": "no-es-correo"}, follow=True)
+
+        self.assertContains(response, "Escribe un correo válido para la prueba.")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_console_mode_says_where_the_mail_went(self):
+        from django.test import override_settings
+
+        with override_settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
+            response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
+
+        self.assertContains(response, "Modo consola: el correo se imprimió en la terminal del servidor y no salió a internet.")
+
+    def test_console_mode_explains_how_to_enable_smtp(self):
+        from django.test import override_settings
+
+        with override_settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
+            response = self.client.get("/cuenta/configuracion/")
+
+        self.assertContains(response, "Para enviar correos reales")
+        self.assertContains(response, "EMAIL_HOST_PASSWORD")
+
+    def test_smtp_failure_is_reported(self):
+        with patch("apps.accounts.views.send_verification_email", side_effect=OSError("Connection refused")):
+            response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
+
+        self.assertContains(response, "No se pudo enviar el correo de prueba: Connection refused")
+
+
+class AvatarInitialsTests(TestCase):
+    def test_initials_from_full_name_or_email(self):
+        from apps.core.templatetags.ui import initials
+
+        self.assertEqual(initials(User(first_name="Gabriela", last_name="Andagoya", email="g@x.ec")), "GA")
+        self.assertEqual(initials(User(first_name="maría", email="m@x.ec")), "M")
+        self.assertEqual(initials(User(email="gabrielaadmin@gmail.com")), "G")
+
+    def test_sidebar_shows_initials(self):
+        org = Organization.objects.create(name="UNEMI", domain="unemi.edu.ec", sector="publico")
+        user = User.objects.create_user(email="g@unemi.edu.ec", password="Correcta123", first_name="Gabriela", last_name="Andagoya", organization=org)
+        self.client.force_login(user)
+
+        self.assertContains(self.client.get("/"), '<span class="avatar" aria-hidden="true">GA</span>', html=False)

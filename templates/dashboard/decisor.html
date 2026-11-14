@@ -68,7 +68,7 @@
                     {% for evaluation in summary.recent %}
                     <tr>
                         <td>{{ evaluation.software }}</td>
-                        <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true"></span>{{ evaluation.author.get_full_name }}</span></td>
+                        <td><span class="table__person"><span class="avatar avatar--sm" aria-hidden="true">{{ evaluation.author|initials }}</span>{{ evaluation.author.get_full_name }}</span></td>
                         <td>{{ evaluation.finished_at|short_date }}</td>
                         <td><span class="pill pill--success">Finalizada</span></td>
                         <td><span class="recommendation"><span class="letter">{{ evaluation.recommendation }}</span>{{ evaluation.recommendation|recommendation_name }}</span></td>

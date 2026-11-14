@@ -2,8 +2,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.core.mail import send_mail
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import validate_email
 from django.views.decorators.http import require_POST
 from django.contrib.auth.views import (
     LoginView,
@@ -32,7 +32,9 @@ from .services import (
     active_organization_for_email,
     create_pending_signup,
     email_domain,
+    new_code,
     resend_pending_signup_code,
+    send_verification_email,
     verify_pending_signup,
 )
 
@@ -186,18 +188,22 @@ def profile(request):
 @login_required
 @require_POST
 def send_test_email(request):
-    """Lets an administrator confirm that verification codes are being delivered."""
+    """Sends the real verification email (same function as signup) so delivery can be checked."""
     if request.user.role != "administrador":
         raise PermissionDenied
+    recipient = request.POST.get("recipient", "").strip() or request.user.email
     try:
-        send_mail(
-            "Correo de prueba de GUIOS PRO",
-            "Si recibes este mensaje, los códigos de verificación se están enviando correctamente.",
-            None,
-            [request.user.email],
-        )
+        validate_email(recipient)
+    except ValidationError:
+        messages.error(request, "Escribe un correo válido para la prueba.")
+        return redirect("accounts:profile")
+    try:
+        send_verification_email(recipient, new_code())
     except Exception as error:  # SMTP errors vary by provider; show the reason to the admin.
         messages.error(request, f"No se pudo enviar el correo de prueba: {error}")
+        return redirect("accounts:profile")
+    if mail_status()["is_real"]:
+        messages.success(request, f"Correo de prueba enviado a {recipient}. Revisa también la carpeta de spam.")
     else:
-        messages.success(request, f"Correo de prueba enviado a {request.user.email}.")
+        messages.warning(request, "Modo consola: el correo se imprimió en la terminal del servidor y no salió a internet.")
     return redirect("accounts:profile")

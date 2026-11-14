@@ -25,8 +25,8 @@
 .sidebar__user-meta { color: var(--color-muted); }
 .sidebar__logout { display: grid; width: 32px; height: 32px; padding: 0; place-items: center; border: 0; background: none; color: var(--color-text-secondary); cursor: pointer; }
 .sidebar__logout svg { width: 20px; height: 20px; }
-.avatar { width: 32px; height: 32px; flex: none; border-radius: var(--radius-full); background: var(--color-border-strong); }
-.avatar--sm { width: 26px; height: 26px; }
+.avatar { display: inline-grid; width: 32px; height: 32px; flex: none; place-items: center; border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1; }
+.avatar--sm { width: 26px; height: 26px; font-size: 11px; }
 
 .app.is-collapsed .sidebar .brand span,
 .app.is-collapsed .nav-section__title,
