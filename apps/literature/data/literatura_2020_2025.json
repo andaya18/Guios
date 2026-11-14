@@ -1,0 +1,480 @@
+{
+  "period": "2020-2025",
+  "source": "doc/sugerida.pdf, Tabla 14",
+  "documents": [
+    {
+      "key": "butler-2022",
+      "authors": "Butler et al.",
+      "year": 2022,
+      "title": "Considerations and challenges for the adoption of open source components in software-intensive businesses",
+      "source": "Journal of Systems and Software, 186, 111152",
+      "url": "https://doi.org/10.1016/j.jss.2021.111152",
+      "database": "ScienceDirect"
+    },
+    {
+      "key": "silva-2023",
+      "authors": "Silva et al.",
+      "year": 2023,
+      "title": "Factors influencing free and open-source software adoption in developing countries—an empirical study",
+      "source": "Journal of Open Innovation: Technology, Market, and Complexity, 9(1), 100002",
+      "url": "https://doi.org/10.1016/j.joitmc.2023.01.002",
+      "database": "ScienceDirect"
+    },
+    {
+      "key": "linaker-2022",
+      "authors": "Linåker et al.",
+      "year": 2022,
+      "title": "How to characterize the health of an Open Source Software project? A snowball literature review of an emerging practice",
+      "source": "Proceedings of the 18th International Symposium on Open Collaboration (OpenSym '22)",
+      "url": "https://doi.org/10.1145/3555051.3555067",
+      "database": "ACM Digital Library"
+    },
+    {
+      "key": "bostan-2024",
+      "authors": "Bostan et al.",
+      "year": 2024,
+      "title": "Contextual barriers to implementing open-source electronic health record systems for low- and lower-middle-income countries: Scoping review",
+      "source": "Journal of Medical Internet Research, 26, e45242",
+      "url": "https://doi.org/10.2196/45242",
+      "database": "ScienceDirect"
+    },
+    {
+      "key": "li-2022",
+      "authors": "Li et al.",
+      "year": 2022,
+      "title": "Exploring factors and metrics to select open source software components for integration: An empirical study",
+      "source": "Journal of Systems and Software, 188, 111255",
+      "url": "https://doi.org/10.1016/j.jss.2022.111255",
+      "database": "ScienceDirect"
+    },
+    {
+      "key": "sanchez-2020",
+      "authors": "Sánchez et al.",
+      "year": 2020,
+      "title": "Open source adoption factors—A systematic literature review",
+      "source": "IEEE Access, 8, 94594–94609",
+      "url": "https://doi.org/10.1109/ACCESS.2020.2993248",
+      "database": "Scopus / IEEE Xplore"
+    },
+    {
+      "key": "langerman-2024",
+      "authors": "Langerman y Daramola",
+      "year": 2024,
+      "title": "Open source software adoption in the financial services industry: Exploratory evidence from South Africa",
+      "source": "International Journal of Open Source Software and Processes, 15(1), 1–37",
+      "url": "https://doi.org/10.4018/IJOSSP.356512",
+      "database": "Scopus"
+    },
+    {
+      "key": "lenarduzzi-2020",
+      "authors": "Lenarduzzi et al.",
+      "year": 2020,
+      "title": "Open source software evaluation, selection, and adoption: A systematic literature review",
+      "source": "2020 46th Euromicro Conference on Software Engineering and Advanced Applications (SEAA), 437–444",
+      "url": "https://doi.org/10.1109/SEAA51224.2020.00076",
+      "database": "IEEE Xplore"
+    },
+    {
+      "key": "yenisenyavuz-2025-a",
+      "authors": "Yenişen Yavuz y Riehle",
+      "year": 2025,
+      "title": "Why and how do organizations create user-led open source consortia? A systematic literature review",
+      "source": "Information and Software Technology, 181, 107681",
+      "url": "https://doi.org/10.1016/j.infsof.2025.107681",
+      "database": "Scopus / Web of Science"
+    },
+    {
+      "key": "yenisenyavuz-2025-b",
+      "authors": "Yenişen Yavuz et al.",
+      "year": 2025,
+      "title": "Why do companies create and how do they succeed with a vendor-led open source foundation",
+      "source": "Empirical Software Engineering, 30, 40",
+      "url": "https://doi.org/10.1007/s10664-024-10588-9",
+      "database": "Scopus"
+    },
+    {
+      "key": "kodhek-2025",
+      "authors": "Kodhek y Kamau",
+      "year": 2025,
+      "title": "Beyond Free: Hidden Costs as Major Contributors to Owning Open Source Software in Open Distance and E-Learning (ODEL) Departments of Universities in Embu and Kiambu Counties, Kenya",
+      "source": "African Journal of Empirical Research, 6(2), 134–146",
+      "url": "https://doi.org/10.51867/ajernet.6.2.11",
+      "database": "Google Scholar"
+    },
+    {
+      "key": "kereu-2024",
+      "authors": "Kereu",
+      "year": 2024,
+      "title": "A Model for Total Cost Determination in Open-Source Software Ownership: Case of Kenyan Universities' Learning Management System",
+      "source": "Computer and Information Science, 17(1), 1–18",
+      "url": "https://doi.org/10.5539/cis.v17n1p18",
+      "database": "Google Scholar"
+    },
+    {
+      "key": "jha-2024",
+      "authors": "Jha y Upadhyay",
+      "year": 2024,
+      "title": "Adoption and Economic Impact of Open-Source Software in Digital Libraries",
+      "source": "African Journal of Biomedical Research, 27(5S), 719–725",
+      "url": "https://doi.org/10.53555/AJBR.v27i5S.6755",
+      "database": "Google Scholar"
+    }
+  ],
+  "citations": [
+    {
+      "document": "butler-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 3
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Compatibilidad",
+      "subfactor_order": 3
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 3
+    },
+    {
+      "document": "bostan-2024",
+      "factor": "Compatibilidad",
+      "subfactor_order": 3
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 5
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 7
+    },
+    {
+      "document": "li-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 7
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 7
+    },
+    {
+      "document": "li-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 8
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Compatibilidad",
+      "subfactor_order": 8
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Fiabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "li-2022",
+      "factor": "Fiabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Fiabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Fiabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Fiabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Fiabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Fiabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Mantenibilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "li-2022",
+      "factor": "Mantenibilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Mantenibilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Personalización",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Personalización",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Personalización",
+      "subfactor_order": 3
+    },
+    {
+      "document": "li-2022",
+      "factor": "Personalización",
+      "subfactor_order": 5
+    },
+    {
+      "document": "li-2022",
+      "factor": "Prueba",
+      "subfactor_order": 1
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Prueba",
+      "subfactor_order": 1
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Documentación",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Documentación",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Documentación",
+      "subfactor_order": 3
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Documentación",
+      "subfactor_order": 4
+    },
+    {
+      "document": "li-2022",
+      "factor": "Documentación",
+      "subfactor_order": 5
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Documentación",
+      "subfactor_order": 5
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Documentación",
+      "subfactor_order": 8
+    },
+    {
+      "document": "li-2022",
+      "factor": "Documentación",
+      "subfactor_order": 9
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Documentación",
+      "subfactor_order": 9
+    },
+    {
+      "document": "li-2022",
+      "factor": "Portabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Portabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Reusabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "li-2022",
+      "factor": "Reusabilidad",
+      "subfactor_order": 1
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Reusabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Reusabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Usabilidad",
+      "subfactor_order": 2
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Usabilidad",
+      "subfactor_order": 3
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Apoyo de la alta dirección",
+      "subfactor_order": 1
+    },
+    {
+      "document": "langerman-2024",
+      "factor": "Apoyo de la alta dirección",
+      "subfactor_order": 1
+    },
+    {
+      "document": "silva-2023",
+      "factor": "Formación",
+      "subfactor_order": 2
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Formación",
+      "subfactor_order": 3
+    },
+    {
+      "document": "bostan-2024",
+      "factor": "Formación",
+      "subfactor_order": 3
+    },
+    {
+      "document": "bostan-2024",
+      "factor": "Formación",
+      "subfactor_order": 4
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Soporte",
+      "subfactor_order": 1
+    },
+    {
+      "document": "lenarduzzi-2020",
+      "factor": "Soporte",
+      "subfactor_order": 1
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Soporte",
+      "subfactor_order": 2
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Soporte",
+      "subfactor_order": 3
+    },
+    {
+      "document": "lenarduzzi-2020",
+      "factor": "Soporte",
+      "subfactor_order": 3
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Soporte",
+      "subfactor_order": 3
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Soporte",
+      "subfactor_order": 5
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Soporte",
+      "subfactor_order": 5
+    },
+    {
+      "document": "langerman-2024",
+      "factor": "Actitud hacia el cambio",
+      "subfactor_order": 2
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Actitud hacia el cambio",
+      "subfactor_order": 2
+    },
+    {
+      "document": "sanchez-2020",
+      "factor": "Bloqueo de proveedores",
+      "subfactor_order": 1
+    },
+    {
+      "document": "langerman-2024",
+      "factor": "Bloqueo de proveedores",
+      "subfactor_order": 1
+    },
+    {
+      "document": "yenisenyavuz-2025-a",
+      "factor": "Bloqueo de proveedores",
+      "subfactor_order": 1
+    },
+    {
+      "document": "yenisenyavuz-2025-b",
+      "factor": "Bloqueo de proveedores",
+      "subfactor_order": 1
+    },
+    {
+      "document": "langerman-2024",
+      "factor": "Centralidad de las TI",
+      "subfactor_order": 1
+    },
+    {
+      "document": "li-2022",
+      "factor": "Tiempo de adopción",
+      "subfactor_order": 1
+    },
+    {
+      "document": "linaker-2022",
+      "factor": "Tiempo de adopción",
+      "subfactor_order": 1
+    },
+    {
+      "document": "butler-2022",
+      "factor": "Tiempo de adopción",
+      "subfactor_order": 2
+    },
+    {
+      "document": "li-2022",
+      "factor": "Tiempo de adopción",
+      "subfactor_order": 2
+    },
+    {
+      "document": "kodhek-2025",
+      "factor": "Coste total de propiedad (TCO)",
+      "subfactor_order": 1
+    },
+    {
+      "document": "kereu-2024",
+      "factor": "Coste total de propiedad (TCO)",
+      "subfactor_order": 1
+    },
+    {
+      "document": "jha-2024",
+      "factor": "Coste total de propiedad (TCO)",
+      "subfactor_order": 2
+    }
+  ]
+}

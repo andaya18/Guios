@@ -94,3 +94,63 @@ def comparar(evaluaciones):
         e for e in ordenadas if clave_comparacion(e) == clave_comparacion(ordenadas[0])
     ]
     return ordenadas, mejores  # len(mejores) > 1  ->  empate
+
+
+# ---------- Importancia sugerida desde la literatura (doc/sugerida.pdf, Tablas 12-17) ----------
+
+def cortes_cuartiles(valores):
+    """Cortes rq1..rq4 con el mismo método que CUARTIL.INC de Excel.
+
+    Posición (base 1) = 1 + (n - 1) * k / 4; si cae entre dos valores se interpola.
+    """
+    ordenados = sorted(Decimal(v) for v in valores)
+    n = len(ordenados)
+    if n < 2:
+        raise ValueError("Se necesitan al menos dos factores para calcular cuartiles.")
+    cortes = []
+    for k in (1, 2, 3, 4):
+        posicion = Decimal(n - 1) * k / 4  # base 0
+        inferior = int(posicion)
+        fraccion = posicion - inferior
+        if inferior + 1 < n:
+            valor = ordenados[inferior] + fraccion * (ordenados[inferior + 1] - ordenados[inferior])
+        else:
+            valor = ordenados[inferior]
+        cortes.append(valor)
+    return tuple(cortes)
+
+
+def importancia_literatura(r, cortes):
+    """IL de 1 a 4. Un valor igual a un corte va al cuartil inferior (regla «menor o igual»)."""
+    rq1, rq2, rq3, _ = cortes
+    if r <= rq1:
+        return 1
+    if r <= rq2:
+        return 2
+    if r <= rq3:
+        return 3
+    return 4
+
+
+def importancia_sugerida(importancia_experto, importancia_lectura):
+    """IS = MATRIZ[IE][IL] (Tabla 12): la misma matriz que combina dos niveles de importancia."""
+    if importancia_experto not in MATRIZ or importancia_lectura not in MATRIZ:
+        raise ValueError("IE e IL deben estar entre 1 y 4.")
+    return MATRIZ[importancia_experto][importancia_lectura]
+
+
+def calcular_importancia_sugerida(conteos, importancia_experto):
+    """conteos: {factor: (NS, TC)}. Devuelve {factor: {"ns", "tc", "r", "il", "is"}} y aplica los 5 pasos."""
+    razones = {factor: Decimal(tc) / Decimal(ns) for factor, (ns, tc) in conteos.items()}
+    cortes = cortes_cuartiles(razones.values())
+    resultado = {}
+    for factor, (ns, tc) in conteos.items():
+        il = importancia_literatura(razones[factor], cortes)
+        resultado[factor] = {
+            "ns": ns,
+            "tc": tc,
+            "r": razones[factor],
+            "il": il,
+            "is": importancia_sugerida(importancia_experto, il),
+        }
+    return resultado

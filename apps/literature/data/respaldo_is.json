@@ -1,0 +1,23 @@
+{
+  "source": "doc/sugerida.pdf, Tabla 17 (IS actualizada 2020-2025)",
+  "values": {
+    "Compatibilidad": 2,
+    "Fiabilidad": 3,
+    "Mantenibilidad": 3,
+    "Personalización": 2,
+    "Prueba": 3,
+    "Documentación": 2,
+    "Portabilidad": 2,
+    "Reusabilidad": 3,
+    "Usabilidad": 2,
+    "Apoyo de la alta dirección": 3,
+    "Formación": 2,
+    "Soporte": 3,
+    "Actitud hacia el cambio": 2,
+    "Bloqueo de proveedores": 3,
+    "Casos de estudio de adopción FLOSS": 2,
+    "Centralidad de las TI": 2,
+    "Tiempo de adopción": 3,
+    "Coste total de propiedad (TCO)": 3
+  }
+}
