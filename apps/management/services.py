@@ -117,7 +117,7 @@ def update_draft_factor(version, factor, suggested_importance, default_scope):
 
 
 @transaction.atomic
-def publish_version(version, *, justification, authorized_by, name):
+def publish_version(version, *, justification, authorized_by, name, published_by=None):
     """Publica un borrador: la activa pasa a publicada y el borrador queda activo.
 
     Las evaluaciones existentes conservan la versión con la que se hicieron.
@@ -133,7 +133,8 @@ def publish_version(version, *, justification, authorized_by, name):
     version.authorized_by = authorized_by.strip()
     version.name = name.strip() or version.name
     version.published_at = timezone.now()
-    version.save(update_fields=["status", "justification", "authorized_by", "name", "published_at"])
+    version.published_by = published_by
+    version.save(update_fields=["status", "justification", "authorized_by", "name", "published_at", "published_by"])
     return version
 
 

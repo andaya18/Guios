@@ -104,6 +104,15 @@ class PublishVersionTests(TestCase):
         self.assertEqual(CatalogVersion.objects.filter(status="activa").count(), 1)
         self.assertEqual(values_of(2), v2_before)
 
+    def test_publish_records_who_published(self):
+        from apps.management.tests.helpers import make_admin
+
+        admin = make_admin()
+        draft = services.create_draft()
+        services.publish_version(draft, justification="Sustento", authorized_by="PhD. V. Rea", name="x", published_by=admin)
+        draft.refresh_from_db()
+        self.assertEqual(draft.published_by, admin)
+
     def test_only_drafts_can_be_published(self):
         v1 = CatalogVersion.objects.get(number=1)
         with self.assertRaisesMessage(CatalogRuleError, "Solo se puede publicar una versión en borrador."):

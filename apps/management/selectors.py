@@ -118,7 +118,7 @@ def filter_organizations(*, tab="todas", query="", sector=""):
 def versions_overview():
     """Versiones para M03 (más reciente primero) con cambios frente a la anterior."""
     evaluations = evaluations_by_version()
-    versions = list(CatalogVersion.objects.order_by("-number"))
+    versions = list(CatalogVersion.objects.select_related("published_by").order_by("-number"))
     for version in versions:
         previous = services.previous_version(version)
         version.changed_factors = (

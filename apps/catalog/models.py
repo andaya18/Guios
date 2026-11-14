@@ -1,4 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.conf import settings
 from django.db import models
 
 
@@ -11,6 +12,10 @@ class CatalogVersion(models.Model):
     justification = models.TextField(blank=True)
     authorized_by = models.CharField(max_length=150, blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
+    # Quién publicó la versión; vacío en las creadas por cargar_catalogo (se muestra como "Sistema").
+    published_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
 
     class Meta:
         ordering = ["number"]

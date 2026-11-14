@@ -281,6 +281,6 @@ class PublishView(AdministratorRequiredMixin, View):
             return self.render_page(request, version, form)
         services.publish_version(version, **{
             key: form.cleaned_data[key] for key in ("justification", "authorized_by", "name")
-        })
+        }, published_by=request.user)
         messages.success(request, f"Versión v{version.number} publicada. Las evaluaciones nuevas la usarán.")
         return redirect("management:catalog")

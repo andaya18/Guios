@@ -32,6 +32,17 @@ class CatalogViewsTests(TestCase):
         self.assertContains(response, '<span class="pill pill--neutral">Publicada</span>', html=True)
         self.assertContains(response, "Marcar como activa", count=1)
 
+    def test_versions_page_shows_who_published(self):
+        self.client.post("/gestion/catalogo/nueva/")
+        number = CatalogVersion.objects.get(status="borrador").number
+        self.client.post(f"/gestion/catalogo/{number}/publicar/", {"justification": "Revisión 2026", "authorized_by": "PhD. V. Rea", "name": "Actualización 2026"})
+
+        response = self.client.get("/gestion/catalogo/")
+
+        self.assertContains(response, "<th>Por</th>", html=False)
+        self.assertContains(response, self.admin.get_full_name())
+        self.assertContains(response, "Sistema")
+
     def test_versions_page_shows_changes_of_the_active_version(self):
         response = self.client.get("/gestion/catalogo/")
         self.assertContains(response, "Cambios de v2")
