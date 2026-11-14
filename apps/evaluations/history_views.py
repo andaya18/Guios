@@ -4,7 +4,6 @@ from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -112,13 +111,6 @@ def delete_draft(request, pk):
     workflow.delete_draft(evaluation, request.user)
     messages.success(request, f"Se eliminó el borrador de {evaluation.software}.")
     return redirect("history:list")
-
-
-@decisor_required
-def export_pending(request, pk):
-    """Replaced by apps.exports once X01 lands (T6)."""
-    get_visible_evaluation(request.user, pk)
-    raise Http404("La exportación todavía no está disponible.")
 
 
 @decisor_required
