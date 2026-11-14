@@ -10,16 +10,16 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - S5 Remaining screens and flows per §6 and §7 (D01, D02, E1-E5, H01-H03, C01, X01, AD01, U01/U02, O01/O02, M01-M03, I01, G01-G03).
 
 ## Tasks
-- T0 [done] Scaffold and register apps catalog/evaluations/exports. Route: orchestrator inline.
-- T1 [in progress] Phase 1 UI fix: tokens, auth layout, A01-A03 copy, base templates T01/T02. S1, S2. Route: orchestrator. Surface: templates/**, static/**, apps/accounts/**.
-- T2 [done b9436a1, 22 tests] Catalog app. S2, S3. Surface: apps/catalog/**.
-- T3 [done, worker mwe1like-2-2mww, 34 tests GREEN] Pure calculation services and tests. S2, S4. Surface: apps/evaluations/services.py, apps/evaluations/tests/**.
-- T4a [session 2: odd/handoff/T4-evaluations-backend.md] Evaluation models, workflow, permissions, selectors. S2, S4, S5.
-- T4b [orchestrator, after T4a] Views/templates D02, E1-E5 with HTMX autosave. S1, S5.
-- T5 [pending T4] D01, H01-H03, duplicate, delete draft. S5.
-- T6 [pending T4] C01 compare, X01 PDF/CSV export. S5.
-- T7 [session 3: odd/handoff/T7-admin.md] Admin AD01, U01/U02, O01/O02, M01-M03. S1, S2, S5.
-- T8 [pending] I01 help, G01-G03 error/empty states. S1, S5.
+- T0 [done] Scaffold and register apps.
+- T1 [done 189b92e, e0049f6, 365d54e, eef6e32, 4133bde, 3c029f8, 7db46e1, 7183d96, 77583e9] UI fidelity: auth A01-A03, shell T01/T02, D01, D02, E1-E5, H01-H03, X01 modal, C01, I01, G02, G03. S1, S2.
+- T2 [done b9436a1] Catalog app + cargar_catalogo. S2, S3.
+- T3 [done e910ac5] Pure calculation services. S2, S4.
+- T4a [done 4dac756] Evaluation models, workflow, permissions, selectors. S2, S4, S5.
+- T4b [done 757aa39] Views D02, E1-E5 with HTMX autosave. S1, S5.
+- T5 [done 73f57c1, 8a94a5a] History H01-H03, duplicate, delete draft, compare C01. S5.
+- T6 [done 5e37060] Export X01 PDF/CSV (reportlab==4.4.10). S5.
+- T7 [done fb57789 + published_by] Admin AD01, U01/U02, O01/O02, M01-M03. S1, S5.
+- T8 [done 77583e9, 888355e] I01 help, G01-G03, session expiry, SMTP env, apps.ai (disabled). S1, S5.
 
 ## Log
 - L1 (user, verbatim summary of original request) "Vamos a corregir y completar el proyecto GIOS Pro ... refactorizar lo actual y terminar las pantallas faltantes." Rules: S1, S2, token saving, explain before coding each module.
@@ -34,3 +34,4 @@ Orchestrator session: 01a1d175-78b7-750f-b6ca-4e315b3b11fa. Workers never commit
 - L9 (user) "haz el registro automático". Figma registration-approval queue (AD01 table, U01 Pendientes tab) is dropped; §6.1 automatic signup stands.
 - L11 Pending refactor from GGA review: replace hardcoded paths (/comparar/, /evaluaciones/nueva/, /historial/, /ayuda/) with {% url %} once T4b/T5 views and url names exist.
 - L12 (user) "hazlo": ReportLab authorized, pinned, added by session 2 in T6. Session 1 owns T4b. Session 3: drop pending signups, add published_by/authorized_at, fix 2 management tests.
+- L13 Remaining by decision: PERFIL-configuracion frame is not in the guide (no route in §7) -> not built unless the user asks. authorized_at dropped (duplicates published_at).

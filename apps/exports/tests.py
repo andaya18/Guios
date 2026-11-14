@@ -8,7 +8,7 @@ from django.utils import timezone
 from apps.accounts.models import Organization, User
 from apps.evaluations import workflow
 from apps.evaluations.models import Software
-from apps.evaluations.tests.test_history_views import finished_evaluation
+from apps.evaluations.tests.factories import finished_evaluation
 from apps.exports import services
 
 CSV_HEADER = [
