@@ -505,3 +505,37 @@ class AvatarInitialsTests(TestCase):
         self.client.force_login(user)
 
         self.assertContains(self.client.get("/"), '<span class="avatar" aria-hidden="true">GA</span>', html=False)
+
+
+class EmailFailureTests(TestCase):
+    """If SMTP fails, the visitor sees a clear message instead of a server error (§4.8 usability)."""
+
+    def test_signup_shows_error_and_can_retry_when_mail_fails(self):
+        with patch("apps.accounts.services.send_mail", side_effect=OSError("SMTP down")):
+            response = self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No pudimos enviar el código de verificación. Intenta de nuevo en unos minutos.")
+        self.assertFalse(PendingSignup.objects.exists())
+
+        with patch("apps.accounts.services.send_mail"):
+            retry = self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
+        self.assertRedirects(retry, reverse("accounts:signup_verify"), fetch_redirect_response=False)
+
+    def test_resend_failure_keeps_previous_code_valid(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        with patch("apps.accounts.services.send_mail"):
+            self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
+        pending = PendingSignup.objects.get()
+        PendingSignup.objects.filter(pk=pending.pk).update(expires_at=timezone.now() + timedelta(minutes=8))
+        before = PendingSignup.objects.get()
+
+        with patch("apps.accounts.services.send_mail", side_effect=OSError("SMTP down")):
+            response = self.client.post(reverse("accounts:signup_verify"), {"resend": "1"}, follow=True)
+
+        self.assertContains(response, "No pudimos enviar el código de verificación. Intenta de nuevo en unos minutos.")
+        after = PendingSignup.objects.get()
+        self.assertEqual((after.code_hash, after.expires_at), (before.code_hash, before.expires_at))

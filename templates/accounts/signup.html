@@ -6,6 +6,7 @@
     <p class="auth-form__subtitle">¡Empieza a tomar decisiones con evidencia!</p>
     <form method="post" action="{% url 'accounts:signup' %}" novalidate>
         {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert--error form-errors" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
         <div class="form-row">
             {% include "components/field.html" with field=form.first_name %}
             {% include "components/field.html" with field=form.last_name %}

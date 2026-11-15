@@ -35,6 +35,7 @@ from .services import (
     new_code,
     resend_pending_signup_code,
     send_verification_email,
+    VerificationEmailError,
     verify_pending_signup,
 )
 
@@ -72,9 +73,13 @@ def signup(request):
     form = SignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
-        pending = create_pending_signup(data["email"], data["first_name"], data["last_name"], data["password"])
-        request.session["pending_signup_email"] = pending.email
-        return redirect("accounts:signup_verify")
+        try:
+            pending = create_pending_signup(data["email"], data["first_name"], data["last_name"], data["password"])
+        except VerificationEmailError as error:
+            form.add_error(None, str(error))
+        else:
+            request.session["pending_signup_email"] = pending.email
+            return redirect("accounts:signup_verify")
     return render(request, "accounts/signup.html", {"form": form})
 
 
@@ -89,7 +94,7 @@ def signup_verify(request):
         if "resend" in request.POST:
             try:
                 resend_pending_signup_code(pending)
-            except ValueError as error:
+            except (ValueError, VerificationEmailError) as error:
                 messages.error(request, str(error))
             else:
                 messages.success(request, "Te enviamos un nuevo código de verificación.")
