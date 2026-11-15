@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth.password_validation import validate_password
 
 from apps.accounts.models import Organization, User
 from apps.catalog.models import FactorVersion
@@ -7,51 +6,41 @@ from apps.evaluations.services import ESCALA
 
 
 class UserForm(forms.ModelForm):
-    """U02: crear (con cualquier rol) y editar usuarios. Nunca se eliminan."""
+    """U02 drawer: create (any role) or edit users. Users are never deleted, only deactivated.
 
-    password = forms.CharField(
-        label="Contraseña temporal",
-        widget=forms.PasswordInput(attrs={"placeholder": "Mínimo 8 caracteres", "autocomplete": "new-password"}),
-        help_text="El usuario podrá cambiarla desde Recuperar contraseña.",
+    New users get no password here: they receive an email link to create it (Figma U02).
+    """
+
+    full_name = forms.CharField(
+        label="Nombre completo", max_length=150, error_messages={"required": "Escribe el nombre completo."}
     )
+    role = forms.ChoiceField(label="Rol", choices=User.ROLES, widget=forms.RadioSelect)
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "role", "organization", "area", "is_active"]
-        labels = {
-            "first_name": "Nombre",
-            "last_name": "Apellido",
-            "email": "Correo electrónico",
-            "role": "Rol",
-            "organization": "Organización",
-            "area": "Área",
-            "is_active": "Activo · puede iniciar sesión",
-        }
-        widgets = {
-            "first_name": forms.TextInput(attrs={"placeholder": "Ingresa el nombre"}),
-            "last_name": forms.TextInput(attrs={"placeholder": "Ingresa el apellido"}),
-            "email": forms.EmailInput(attrs={"placeholder": "nombre@organizacion.edu.ec"}),
-            "area": forms.TextInput(attrs={"placeholder": "Ej. Dirección TIC"}),
-        }
+        fields = ["email", "role", "organization", "is_active"]
+        labels = {"email": "Correo electrónico", "organization": "Organización", "is_active": "Activo"}
+        widgets = {"email": forms.EmailInput(attrs={"placeholder": "nombre@organizacion.edu.ec"})}
+        error_messages = {"email": {"unique": "Este correo ya está registrado"}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for name in ("first_name", "last_name"):
-            self.fields[name].required = True
         self.fields["organization"].queryset = Organization.objects.order_by("name")
         self.fields["organization"].empty_label = "Sin organización"
+        self.fields["organization"].required = False
         if self.instance.pk:
-            del self.fields["password"]
+            self.initial.setdefault("full_name", self.instance.get_full_name())
         else:
-            del self.fields["is_active"]
+            self.initial.setdefault("is_active", True)
+
+    def clean_full_name(self):
+        name = " ".join(self.cleaned_data["full_name"].split())
+        if not name:
+            raise forms.ValidationError("Escribe el nombre completo.")
+        return name
 
     def clean_email(self):
         return self.cleaned_data["email"].strip().lower()
-
-    def clean_password(self):
-        password = self.cleaned_data["password"]
-        validate_password(password)
-        return password
 
     def clean(self):
         cleaned = super().clean()
@@ -60,13 +49,17 @@ class UserForm(forms.ModelForm):
             self.add_error("organization", "Un decisor debe pertenecer a una organización.")
         if role == "administrador":
             cleaned["organization"] = None
-            cleaned["area"] = ""
         return cleaned
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        if "password" in self.cleaned_data:
-            user.set_password(self.cleaned_data["password"])
+        # First word is the first name; the rest goes to last_name, so get_full_name() shows it unchanged.
+        first, _, rest = self.cleaned_data["full_name"].partition(" ")
+        user.first_name, user.last_name = first, rest
+        if user.role == "administrador":
+            user.area = ""
+        if not user.pk:
+            user.set_unusable_password()
         if commit:
             user.save()
         return user

@@ -50,7 +50,7 @@
 .field__help--block { display: block; margin-bottom: var(--space-6); }
 .field__control { position: relative; }
 .field__control svg { position: absolute; top: 50%; right: var(--space-4); width: 16px; height: 16px; color: var(--color-muted); transform: translateY(-50%); pointer-events: none; }
-.field input:not([type="checkbox"]),
+.field input:not([type="checkbox"]):not([type="radio"]),
 .field select {
     width: 100%;
     height: var(--control-height);
@@ -154,7 +154,8 @@
 
 /* Empty states (G01) */
 .empty { display: grid; justify-items: center; gap: var(--space-2); padding: var(--space-10) var(--space-6); color: var(--color-muted); text-align: center; }
-.empty__icon { width: 56px; height: 56px; margin-bottom: var(--space-2); border-radius: var(--radius-lg); background: var(--color-primary-soft); }
+.empty__icon { display: grid; width: 56px; height: 56px; margin-bottom: var(--space-2); place-items: center; border-radius: var(--radius-lg); background: var(--color-primary-soft); color: var(--color-primary); }
+.empty__icon svg { width: 26px; height: 26px; }
 .empty__title { color: var(--color-text-strong); font-size: var(--text-md); font-weight: var(--weight-medium); }
 .empty__text { max-width: 360px; font-size: var(--text-sm); }
 .panel__title + .panel__subtitle { margin-top: var(--space-4); }
@@ -169,3 +170,26 @@
 .modal__cta { margin-top: var(--space-6); }
 .toast { position: fixed; right: var(--space-6); bottom: var(--space-6); z-index: 45; display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-text-strong); color: #fff; font-size: var(--text-md); box-shadow: var(--shadow-modal); }
 .toast__action { padding: 0; border: 0; background: none; color: var(--color-primary); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* Choice cards: radio options with a title and a short description (X01, U02) */
+.choice-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-4); }
+.choice-card { display: flex; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; }
+.choice-card input { margin-top: 3px; accent-color: var(--color-primary); }
+.choice-card:has(input:checked) { border-color: var(--color-primary); }
+.choice-card strong { display: block; color: var(--color-text-strong); font-weight: var(--weight-regular); }
+.choice-card small { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.choice-card input { flex: none; }
+
+/* Drawer: right-side panel over the page (U02) */
+.drawer-overlay { position: fixed; inset: 0; z-index: 40; display: flex; justify-content: flex-end; background: var(--color-overlay); }
+.drawer-overlay__close { flex: 1; }
+.drawer { display: flex; flex-direction: column; width: min(500px, 100%); height: 100%; background: var(--color-surface); box-shadow: var(--shadow-modal); }
+.drawer__header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-6) var(--space-4); }
+.drawer__title { color: var(--color-text-strong); font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+.drawer__close { display: grid; width: 32px; height: 32px; place-items: center; border-radius: var(--radius-md); color: var(--color-text-secondary); }
+.drawer__close:hover { background: var(--color-surface-muted); }
+.drawer__close svg { width: 20px; height: 20px; }
+.drawer__body { flex: 1; overflow-y: auto; padding: 0 var(--space-6); }
+.drawer__body .field { margin-bottom: var(--space-4); border: 0; padding: 0; }
+.drawer__body .choice-cards { margin-top: var(--space-1); }
+.drawer__footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-5) var(--space-6) var(--space-6); }

@@ -6,6 +6,7 @@ alcance por defecto de cada factor.
 """
 from dataclasses import dataclass
 
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
@@ -156,3 +157,25 @@ def _demote_active():
     for current in CatalogVersion.objects.select_for_update().filter(status="activa"):
         current.status = "publicada"
         current.save(update_fields=["status"])
+
+
+# Usuarios (U02)
+
+class SetPasswordEmailError(Exception):
+    """The account exists but the set-password link could not be emailed."""
+
+
+def send_set_password_email(user, request):
+    """Email a one-time link (same token as Django's password reset) so a new user creates a password."""
+    from django.contrib.auth.tokens import default_token_generator
+    from django.template.loader import render_to_string
+    from django.urls import reverse
+    from django.utils.encoding import force_bytes
+    from django.utils.http import urlsafe_base64_encode
+
+    path = reverse("accounts:password_reset_confirm", args=[urlsafe_base64_encode(force_bytes(user.pk)), default_token_generator.make_token(user)])
+    body = render_to_string("management/users/welcome_email.txt", {"user": user, "link": request.build_absolute_uri(path)})
+    try:
+        send_mail("Tu cuenta de GUIOS PRO", body, None, [user.email])
+    except Exception as error:  # SMTP providers raise many different exception types
+        raise SetPasswordEmailError(str(error)) from error

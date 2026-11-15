@@ -52,7 +52,7 @@
 .auth-form--emphasis .auth-form__subtitle { margin: var(--space-2) 0 var(--space-6); font-size: var(--text-sm); color: var(--color-text-secondary); }
 .auth-form--emphasis .button--primary { font-weight: var(--weight-semibold); }
 .auth-form--emphasis .field { gap: var(--space-2); }
-.auth-form--emphasis .field input:not([type="checkbox"]),
+.auth-form--emphasis .field input:not([type="checkbox"]):not([type="radio"]),
 .auth-form--emphasis .field select { border-color: var(--color-border); }
 
 @media (max-width: 960px) {

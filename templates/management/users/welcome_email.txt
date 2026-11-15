@@ -1,0 +1,8 @@
+Hola, {{ user.first_name }}:
+
+Un administrador creó tu cuenta en GUIOS PRO con el correo {{ user.email }}.
+Abre este enlace para crear tu contraseña (vence en 30 minutos):
+
+{{ link }}
+
+Si el enlace venció, usa «¿Olvidaste tu contraseña?» en la pantalla de inicio de sesión.

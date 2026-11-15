@@ -535,3 +535,39 @@ class EmailFailureTests(TestCase):
         self.assertContains(response, "No pudimos enviar el código de verificación. Intenta de nuevo en unos minutos.")
         after = PendingSignup.objects.get()
         self.assertEqual((after.code_hash, after.expires_at), (before.code_hash, before.expires_at))
+
+
+class AdminCreatedUserResetTests(TestCase):
+    def test_user_without_password_can_request_the_reset_link(self):
+        from django.core import mail
+
+        user = User.objects.create_user(email="nuevo@unemi.edu.ec", first_name="Nuevo")
+        user.set_unusable_password()
+        user.save()
+
+        self.client.post(reverse("accounts:password_reset"), {"email": "nuevo@unemi.edu.ec"})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["nuevo@unemi.edu.ec"])
+
+    def test_inactive_user_still_gets_no_link(self):
+        from django.core import mail
+
+        user = User.objects.create_user(email="baja@unemi.edu.ec", password="Correcta123", is_active=False)
+
+        self.client.post(reverse("accounts:password_reset"), {"email": user.email})
+
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class PasswordResetEmailTests(TestCase):
+    def test_registered_user_receives_reset_link(self):
+        from django.core import mail
+
+        User.objects.create_user(email="ana@unemi.edu.ec", password="Correcta123", first_name="Ana")
+
+        response = self.client.post(reverse("accounts:password_reset"), {"email": "ana@unemi.edu.ec"})
+
+        self.assertRedirects(response, reverse("accounts:password_reset_done"))
+        self.assertEqual(mail.outbox[0].subject, "Recupera tu contraseña de GUIOS PRO")
+        self.assertIn("/recuperar/", mail.outbox[0].body)

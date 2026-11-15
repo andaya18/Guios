@@ -49,9 +49,73 @@
         </table>
     </div>
     {% else %}
-    {% include "components/empty.html" with title="No hay usuarios con estos filtros" text="Prueba con otro nombre, rol u organización." %}
+    {% include "components/empty.html" with title="No hay usuarios con estos filtros" icon="user-search" text="Prueba con otro nombre, rol u organización." %}
     {% endif %}
 </section>
 <p class="footnote">Los usuarios no se eliminan: se desactivan para conservar la autoría de sus evaluaciones.</p>
 {% endblock %}
-{% block page_scripts %}{% include "management/_autosubmit.html" %}{% endblock %}
+{% block modals %}
+{% if form %}
+<div class="drawer-overlay" data-drawer>
+    <a class="drawer-overlay__close" href="{% url 'management:users' %}" aria-label="Cerrar" tabindex="-1"></a>
+    <form class="drawer" method="post" novalidate role="dialog" aria-modal="true" aria-labelledby="user-drawer-title">
+        {% csrf_token %}
+        <header class="drawer__header">
+            <h2 class="drawer__title" id="user-drawer-title">{% if form.instance.pk %}Editar usuario{% else %}Nuevo usuario{% endif %}</h2>
+            <a class="drawer__close" href="{% url 'management:users' %}" aria-label="Cerrar">{% include "components/icon.html" with name="x" %}</a>
+        </header>
+        <div class="drawer__body">
+            {% if form.non_field_errors %}<div class="alert alert--error form-errors">{{ form.non_field_errors.0 }}</div>{% endif %}
+            <div class="field{% if form.full_name.errors %} field--invalid{% endif %}">
+                <label class="field__label" for="{{ form.full_name.id_for_label }}">Nombre completo *</label>
+                {{ form.full_name }}{{ form.full_name.errors }}
+            </div>
+            <div class="field{% if form.email.errors %} field--invalid{% endif %}">
+                <label class="field__label" for="{{ form.email.id_for_label }}">Correo electrónico *</label>
+                {{ form.email }}{{ form.email.errors }}
+            </div>
+            <fieldset class="field">
+                <legend class="field__label">Rol *</legend>
+                <div class="choice-cards">
+                    {% for choice in form.role %}
+                    <label class="choice-card">{{ choice.tag }}<span><strong>{{ choice.choice_label }}</strong><small>{% if choice.data.value == "decisor" %}Evalúa software de su organización{% else %}Gestiona usuarios y catálogo. No evalúa.{% endif %}</small></span></label>
+                    {% endfor %}
+                </div>
+                {{ form.role.errors }}
+            </fieldset>
+            <div class="field{% if form.organization.errors %} field--invalid{% endif %}" data-organization-field>
+                <label class="field__label" for="{{ form.organization.id_for_label }}">Organización *</label>
+                <div class="field__control">{{ form.organization }}{% include "components/icon.html" with name="chevron-down" %}</div>
+                <span class="field__help">Obligatoria para Decisor. Un usuario pertenece a una sola organización.</span>
+                {{ form.organization.errors }}
+            </div>
+            <div class="field">
+                <span class="field__label">Estado</span>
+                <label class="switch">{{ form.is_active }}<span class="switch__track" aria-hidden="true"></span><span>Activo</span></label>
+            </div>
+            {% if not form.instance.pk %}
+            <div class="alert">{% include "components/icon.html" with name="info" %}<p>Usuario nuevo: se envía al correo un enlace para crear su contraseña.</p></div>
+            {% endif %}
+        </div>
+        <footer class="drawer__footer">
+            <a class="button button--secondary" href="{% url 'management:users' %}">Cancelar</a>
+            <button class="button button--primary" type="submit">Guardar cambios</button>
+        </footer>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+{% block page_scripts %}{% include "management/_autosubmit.html" %}
+<script>
+// Hide the organization field for administrators (they never belong to one, §3).
+(() => {
+    const drawer = document.querySelector("[data-drawer]");
+    if (!drawer) return;
+    const field = drawer.querySelector("[data-organization-field]");
+    const sync = () => { field.hidden = drawer.querySelector("[name=role]:checked")?.value === "administrador"; };
+    drawer.addEventListener("change", sync);
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") window.location = drawer.querySelector(".drawer__close").href; });
+    sync();
+})();
+</script>
+{% endblock %}

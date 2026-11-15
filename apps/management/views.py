@@ -36,11 +36,13 @@ class DashboardView(AdministratorRequiredMixin, TemplateView):
 # Usuarios (U01 / U02)
 
 class UserListView(AdministratorRequiredMixin, View):
-    def get(self, request):
+    template_name = "management/users/list.html"
+
+    def list_context(self, request):
         params = request.GET
         tab = params.get("estado") if params.get("estado") in selectors.USER_TABS else "activos"
         counts = selectors.user_tab_counts()
-        return render(request, "management/users/list.html", {
+        return {
             "users": selectors.filter_users(
                 tab=tab,
                 query=params.get("q", "").strip(),
@@ -54,24 +56,40 @@ class UserListView(AdministratorRequiredMixin, View):
             "roles": User.ROLES,
             "organizations": Organization.objects.order_by("name"),
             "filters": params,
-        })
+        }
+
+    def get(self, request):
+        return render(request, self.template_name, self.list_context(request))
 
 
-class UserFormView(AdministratorRequiredMixin, View):
-    template_name = "management/users/form.html"
+class UserFormView(UserListView):
+    """U02 opens as a right-side drawer over the U01 list, as in Figma."""
 
     def get_user(self, pk):
         return get_object_or_404(User, pk=pk) if pk else None
 
+    def render_drawer(self, request, form):
+        return render(request, self.template_name, {**self.list_context(request), "form": form})
+
     def get(self, request, pk=None):
-        return render(request, self.template_name, {"form": UserForm(instance=self.get_user(pk))})
+        return self.render_drawer(request, UserForm(instance=self.get_user(pk)))
 
     def post(self, request, pk=None):
         form = UserForm(request.POST, instance=self.get_user(pk))
         if not form.is_valid():
-            return render(request, self.template_name, {"form": form})
+            return self.render_drawer(request, form)
+        is_new = form.instance.pk is None
         user = form.save()
-        messages.success(request, f"Usuario {user.email} guardado.")
+        if not is_new:
+            messages.success(request, f"Usuario {user.email} guardado.")
+            return redirect("management:users")
+        try:
+            services.send_set_password_email(user, request)
+        except services.SetPasswordEmailError:
+            messages.warning(request, f"Usuario {user.email} creado, pero no se pudo enviar el enlace para crear la contraseña. "
+                                      "Pídele que use «¿Olvidaste tu contraseña?».")
+        else:
+            messages.success(request, f"Usuario {user.email} creado. Le enviamos un enlace para crear su contraseña.")
         return redirect("management:users")
 
 

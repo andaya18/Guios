@@ -119,6 +119,13 @@ class GuiosPasswordResetForm(PasswordResetForm):
     def clean_email(self):
         return normalize_email(self.cleaned_data["email"])
 
+    def get_users(self, email):
+        """Active users, including those an administrator created without a password yet (U02).
+
+        Django skips unusable passwords by default; here the link is how those users set their first one.
+        """
+        return User.objects.filter(email__iexact=email, is_active=True)
+
 
 class GuiosSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(label="Nueva contraseña", widget=password_input(), strip=False)
