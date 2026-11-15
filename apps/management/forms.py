@@ -121,6 +121,10 @@ class PublishForm(forms.Form):
         max_length=150,
         widget=forms.TextInput(attrs={"placeholder": "Nombre de quien autoriza"}),
     )
+    authorized_at = forms.DateField(
+        label="Fecha de autorización *",
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
     name = forms.CharField(
         label="Nota de versión",
         max_length=100,
@@ -129,3 +133,11 @@ class PublishForm(forms.Form):
     confirmed = forms.BooleanField(
         label="Confirmo que estos cambios fueron validados y autorizados metodológicamente",
     )
+
+    def clean_authorized_at(self):
+        from django.utils import timezone
+
+        value = self.cleaned_data["authorized_at"]
+        if value > timezone.localdate():
+            raise forms.ValidationError("La fecha de autorización no puede ser futura.")
+        return value

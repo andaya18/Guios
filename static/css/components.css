@@ -193,3 +193,6 @@
 .drawer__body .field { margin-bottom: var(--space-4); border: 0; padding: 0; }
 .drawer__body .choice-cards { margin-top: var(--space-1); }
 .drawer__footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-5) var(--space-6) var(--space-6); }
+
+/* Disabled buttons look disabled on every page (E1, D02, M02) */
+.button[disabled], .button.is-disabled { opacity: .45; pointer-events: none; }

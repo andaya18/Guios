@@ -298,7 +298,7 @@ class PublishView(AdministratorRequiredMixin, View):
         if not form.is_valid():
             return self.render_page(request, version, form)
         services.publish_version(version, **{
-            key: form.cleaned_data[key] for key in ("justification", "authorized_by", "name")
+            key: form.cleaned_data[key] for key in ("justification", "authorized_by", "authorized_at", "name")
         }, published_by=request.user)
         messages.success(request, f"Versión v{version.number} publicada. Las evaluaciones nuevas la usarán.")
         return redirect("management:catalog")

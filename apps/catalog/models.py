@@ -11,6 +11,8 @@ class CatalogVersion(models.Model):
     status = models.CharField(max_length=10, choices=ESTADOS, default="borrador")
     justification = models.TextField(blank=True)
     authorized_by = models.CharField(max_length=150, blank=True)
+    # Date the methodological authority approved the change; may precede the publication (M02).
+    authorized_at = models.DateField(null=True, blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
     # Quién publicó la versión; vacío en las creadas por cargar_catalogo (se muestra como "Sistema").
     published_by = models.ForeignKey(

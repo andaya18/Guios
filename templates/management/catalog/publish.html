@@ -24,12 +24,13 @@
                 {% include "components/field.html" with field=form.justification %}
                 <div class="form-grid">
                     {% include "components/field.html" with field=form.authorized_by %}
+                    {% include "components/field.html" with field=form.authorized_at %}
                     <div class="field">
                         <label class="field__label" for="version-number">Nombre de la versión</label>
                         <div class="field__control"><input id="version-number" type="text" value="v{{ version.number }}" readonly></div>
                     </div>
+                    {% include "components/field.html" with field=form.name %}
                 </div>
-                {% include "components/field.html" with field=form.name %}
                 <label class="checkbox{% if form.confirmed.errors %} checkbox--invalid{% endif %}">{{ form.confirmed }}<span>{{ form.confirmed.label }}</span></label>
                 {{ form.confirmed.errors }}
             </section>
@@ -46,7 +47,24 @@
     <div class="panel publish-bar">
         <a class="button button--secondary" href="{% url 'management:catalog_editor' version.number %}">← Volver al catálogo</a>
         <span class="publish-bar__hint">Completa los campos obligatorios y la confirmación</span>
-        <button class="button button--primary" type="submit">Publicar versión v{{ version.number }}</button>
+        <button class="button button--primary" type="submit" data-publish-submit disabled>Publicar versión v{{ version.number }}</button>
     </div>
 </form>
+{% endblock %}
+{% block page_scripts %}
+<script>
+// The publish button stays disabled until every required field and the confirmation are filled (M02).
+(() => {
+    const button = document.querySelector("[data-publish-submit]");
+    const form = button?.form;
+    if (!form) return;
+    const required = ["justification", "authorized_by", "authorized_at"].map((name) => form.elements[name]);
+    const sync = () => {
+        button.disabled = !(required.every((field) => field && field.value.trim()) && form.elements.confirmed.checked);
+    };
+    form.addEventListener("input", sync);
+    form.addEventListener("change", sync);
+    sync();
+})();
+</script>
 {% endblock %}

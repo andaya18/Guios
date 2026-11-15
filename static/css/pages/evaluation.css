@@ -47,7 +47,6 @@
 .stage-footer { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-5); padding: var(--space-4) var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
 .stage-footer__progress { display: grid; gap: var(--space-2); width: 260px; color: var(--color-text-strong); }
 .stage-footer__hint { margin-left: auto; color: var(--color-text-secondary); font-size: var(--text-sm); }
-.button[disabled], .button.is-disabled { opacity: .45; pointer-events: none; }
 
 /* D02 */
 .new-evaluation { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--space-5); align-items: start; }

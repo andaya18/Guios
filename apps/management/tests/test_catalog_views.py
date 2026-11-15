@@ -10,6 +10,7 @@ PUBLISH_DATA = {
     "justification": "Revisión bibliográfica 2026",
     "authorized_by": "PhD. Victor Hugo Rea Sanchez",
     "name": "Actualización 2026",
+    "authorized_at": "2026-11-10",
     "confirmed": "on",
 }
 
@@ -35,7 +36,7 @@ class CatalogViewsTests(TestCase):
     def test_versions_page_shows_who_published(self):
         self.client.post("/gestion/catalogo/nueva/")
         number = CatalogVersion.objects.get(status="borrador").number
-        self.client.post(f"/gestion/catalogo/{number}/publicar/", {"justification": "Revisión 2026", "authorized_by": "PhD. V. Rea", "name": "Actualización 2026"})
+        self.client.post(f"/gestion/catalogo/{number}/publicar/", PUBLISH_DATA)
 
         response = self.client.get("/gestion/catalogo/")
 
@@ -129,6 +130,34 @@ class CatalogViewsTests(TestCase):
         response = self.client.post(f"/gestion/catalogo/{draft.number}/publicar/", {"name": "x"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Este campo es obligatorio.")
+        draft.refresh_from_db()
+        self.assertEqual(draft.status, "borrador")
+
+    def test_publish_page_has_authorization_date_and_disabled_button(self):
+        draft = services.create_draft()
+
+        response = self.client.get(f"/gestion/catalogo/{draft.number}/publicar/")
+
+        self.assertContains(response, "Fecha de autorización *")
+        self.assertContains(response, 'type="date"')
+        self.assertContains(response, "data-publish-submit disabled")
+
+    def test_publish_records_the_authorization_date(self):
+        import datetime
+
+        draft = services.create_draft()
+
+        self.client.post(f"/gestion/catalogo/{draft.number}/publicar/", PUBLISH_DATA)
+
+        draft.refresh_from_db()
+        self.assertEqual(draft.authorized_at, datetime.date(2026, 11, 10))
+
+    def test_authorization_date_cannot_be_in_the_future(self):
+        draft = services.create_draft()
+
+        response = self.client.post(f"/gestion/catalogo/{draft.number}/publicar/", {**PUBLISH_DATA, "authorized_at": "2999-01-01"})
+
+        self.assertContains(response, "La fecha de autorización no puede ser futura.")
         draft.refresh_from_db()
         self.assertEqual(draft.status, "borrador")
 
