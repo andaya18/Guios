@@ -73,6 +73,7 @@ def history_list(request):
         "recommendation_choices": list(RECOMMENDATION_NAMES.items()),
         "evaluators": User.objects.filter(pk__in=visible.values("author_id")).order_by("first_name"),
         "date_choices": DATE_CHOICES,
+        "first_use": counts[""] == 0,  # G01: nothing to filter yet
     })
 
 

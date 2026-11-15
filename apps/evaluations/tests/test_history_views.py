@@ -118,3 +118,61 @@ class CompareViewTests(TestCase):
 
         self.assertContains(response, "versiones de catálogo distintas")
         self.assertNotContains(response, "Mejor alternativa")
+
+
+class HistoryFirstUseTests(TestCase):
+    """G01: an organization without evaluations sees only the first-use empty state."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("cargar_catalogo", verbosity=0)
+        cls.org = Organization.objects.create(name="Nueva", domain="nueva.edu.ec", sector="publico")
+        cls.user = User.objects.create_user(email="ana@nueva.edu.ec", password="Correcta123", first_name="Ana", organization=cls.org)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_first_use_shows_figma_empty_state_without_filters(self):
+        response = self.client.get("/historial/")
+
+        for text in ("Aún no hay evaluaciones",
+                     "Crea la primera evaluación de tu organización. Toma unos 40 minutos y puedes pausarla cuando quieras.",
+                     "+ Nueva evaluación", "Leer la guía GUIOS"):
+            self.assertContains(response, text)
+        self.assertNotContains(response, 'placeholder="Buscar software..."')
+        self.assertNotContains(response, "Mis borradores ·")
+
+    def test_filters_without_results_keep_the_toolbar(self):
+        finished_evaluation(self.user, Software.objects.create(organization=self.org, name="Odoo", version="17", license_type="libre"))
+
+        response = self.client.get("/historial/?q=nada")
+
+        self.assertContains(response, 'placeholder="Buscar software..."')
+        self.assertContains(response, "No hay evaluaciones con estos filtros")
+
+
+class CompareChartTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("cargar_catalogo", verbosity=0)
+        cls.org = Organization.objects.create(name="UNEMI", domain="unemi.edu.ec", sector="publico")
+        cls.ana = User.objects.create_user(email="ana@unemi.edu.ec", password="Correcta123", first_name="Ana", organization=cls.org)
+        sw = lambda n: Software.objects.create(organization=cls.org, name=n, version="1", license_type="libre")
+        cls.low = finished_evaluation(cls.ana, sw("Bajo"), answer=3)
+        cls.high = finished_evaluation(cls.ana, sw("Alto"), answer=4)
+
+    def test_chart_keeps_at_most_eight_factors_and_table_keeps_all(self):
+        from apps.evaluations import presenters
+
+        data = presenters.compare([self.low, self.high])
+
+        self.assertEqual(len(data["chart_rows"]), presenters.MAX_CHART_FACTORS)
+        self.assertEqual(len(data["rows"]), 18)
+
+    def test_chart_note_explains_the_selection(self):
+        self.client.force_login(self.ana)
+
+        response = self.client.get(f"/comparar/?ids={self.low.pk}&ids={self.high.pk}")
+
+        self.assertContains(response, "Se muestran los 8 factores con mayor diferencia de PM")
+        self.assertContains(response, 'class="bars__group"', count=8)

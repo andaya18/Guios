@@ -172,6 +172,7 @@ def result_view(evaluation):
 # ---------- C01 ----------
 
 MAX_COMPARED = 4
+MAX_CHART_FACTORS = 8
 SHORT_NAMES = {
     "Compatibilidad": "Comp.", "Fiabilidad": "Fiab.", "Mantenibilidad": "Mant.", "Personalización": "Pers.",
     "Prueba": "Prueba", "Documentación": "Doc.", "Portabilidad": "Port.", "Reusabilidad": "Reus.",
@@ -258,5 +259,21 @@ def compare(evaluations):
         f"Mejor alternativa: {winner.software} (recomendación {winner.recommendation}). "
         "Se ordenan por recomendación y luego por menos factores problemáticos."
     )
-    return {"items": items, "rows": rows, "chart_notes": notes, "is_tie": is_tie,
+    chart_rows, chart_selected = _chart_rows(rows)
+    if chart_selected:
+        notes.insert(0, f"Se muestran los {len(chart_rows)} factores con mayor diferencia de PM")
+    return {"items": items, "rows": rows, "chart_rows": chart_rows, "chart_notes": notes, "is_tie": is_tie,
             "result_message": message, "show_difference": len(evaluations) == 2}
+
+
+def _pm_spread(row):
+    values = [cell["pm"] for cell in row["cells"] if cell["pm"] is not None]
+    return max(values) - min(values) if len(values) > 1 else Decimal(0)
+
+
+def _chart_rows(rows):
+    """The factors that differ most (stable by catalog order), so bars stay readable. Returns (rows, trimmed)."""
+    if len(rows) <= MAX_CHART_FACTORS:
+        return rows, False
+    ranked = sorted(range(len(rows)), key=lambda i: (-_pm_spread(rows[i]), i))[:MAX_CHART_FACTORS]
+    return [rows[i] for i in sorted(ranked)], True

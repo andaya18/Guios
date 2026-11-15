@@ -70,3 +70,8 @@
     .filters { flex-wrap: wrap; }
     .filters__search { width: 100%; margin-left: 0; }
 }
+
+/* G01 first use: the empty state fills the panel */
+.history-first-use { display: grid; min-height: calc(100vh - 230px); place-items: center; }
+.history-first-use .empty__icon { width: 80px; height: 80px; border-radius: var(--radius-xl); }
+.history-first-use .empty__icon svg { width: 36px; height: 36px; }

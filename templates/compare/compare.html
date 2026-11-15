@@ -63,7 +63,7 @@
         </header>
         <div class="bars" role="img" aria-label="Ponderación media por factor de cada evaluación">
             <span class="bars__threshold" aria-hidden="true"></span>
-            {% for row in rows %}
+            {% for row in chart_rows %}
             <div class="bars__group" {% if not row.foda_differs %}data-same{% endif %}>
                 <div class="bars__columns">{% for cell in row.cells %}<span class="bars__bar bars__bar--{{ forloop.counter }}" style="height: {{ cell.height|unlocalize }}%" title="{{ cell.pm|pm|default:'No evaluado' }}"></span>{% endfor %}</div>
                 <span class="bars__label">{{ row.short_name }}</span>

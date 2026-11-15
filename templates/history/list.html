@@ -11,6 +11,12 @@
     <p class="page__subtitle">Evaluaciones finalizadas de {{ shell_organization }} y tus borradores.</p>
 </header>
 
+{% if first_use %}
+{% url 'help' as help_url %}
+<section class="panel history-first-use">
+    {% include "components/empty.html" with title="Aún no hay evaluaciones" icon="clipboard" text="Crea la primera evaluación de tu organización. Toma unos 40 minutos y puedes pausarla cuando quieras." action_url=new_url action_label="+ Nueva evaluación" link_url=help_url link_label="Leer la guía GUIOS" %}
+</section>
+{% else %}
 <form class="filters" method="get" data-autosubmit>
     <div class="toggle toggle--lg" role="group" aria-label="Estado">
         {% for tab in tabs %}<a class="toggle__item{% if tab.active %} is-active{% endif %}" href="{{ tab.url }}">{{ tab.label }} · {{ tab.count }}</a>{% endfor %}
@@ -88,7 +94,7 @@
             {% if page_obj.paginator.num_pages > 1 %}{% include "components/pagination.html" %}{% endif %}
         </footer>
         {% else %}
-        {% include "components/empty.html" with title="Aún no hay evaluaciones" icon="clipboard" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url=new_url action_label="+ Nueva evaluación" %}
+        {% include "components/empty.html" with title="No hay evaluaciones con estos filtros" icon="search" text="Prueba con otro nombre de software, estado o recomendación." %}
         {% endif %}
     </section>
 </form>
@@ -96,6 +102,7 @@
 <form id="duplicate-{{ evaluation.pk }}" method="post" action="{% url 'history:duplicate' evaluation.pk %}" hidden>{% csrf_token %}</form>
 {% endif %}{% endfor %}
 <p class="history__note">Los borradores de otros usuarios no se listan. Editar y eliminar solo aplican a evaluaciones propias.</p>
+{% endif %}
 {% endblock %}
 {% block modals %}
 {% include "history/partials/delete_modal.html" %}
