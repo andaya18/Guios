@@ -175,3 +175,46 @@ class LiteratureComputeTests(TestCase):
 
         self.assertEqual(verifier.calls, [])
         self.assertEqual(FactorImportance.objects.filter(run=services.current_run()).count(), 18)
+
+
+class ComputeCommandRetryTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("cargar_catalogo", verbosity=0)
+        call_command("cargar_literatura", verbosity=0)
+
+    def test_command_waits_and_retries_until_ai_finishes(self):
+        from io import StringIO
+        from unittest.mock import patch
+
+        flaky = FakeVerifier()
+        calls = {"n": 0}
+        original = flaky.verify
+
+        def verify(document, citations):
+            calls["n"] += 1
+            if calls["n"] in (4, 9):  # quota hits twice in the middle of the run
+                raise AIUnavailable("quota", "limit")
+            return original(document, citations)
+
+        flaky.verify = verify
+        out = StringIO()
+        with patch("apps.literature.services.get_verifier", return_value=flaky), \
+             patch("apps.literature.management.commands.calcular_importancia_sugerida.time.sleep") as sleep:
+            call_command("calcular_importancia_sugerida", "--reintentos", "3", "--espera", "1", stdout=out)
+
+        self.assertIn("Origen: IA", out.getvalue())
+        self.assertEqual(sleep.call_count, 2)
+        self.assertEqual(services.current_run().origin, "ia")
+
+    def test_command_stops_retrying_on_non_quota_errors(self):
+        from io import StringIO
+        from unittest.mock import patch
+
+        out = StringIO()
+        with patch("apps.literature.services.get_verifier", return_value=FakeVerifier(fail="auth")), \
+             patch("apps.literature.management.commands.calcular_importancia_sugerida.time.sleep") as sleep:
+            call_command("calcular_importancia_sugerida", "--reintentos", "3", "--espera", "1", stdout=out)
+
+        self.assertIn("RESPALDO", out.getvalue())
+        sleep.assert_not_called()
