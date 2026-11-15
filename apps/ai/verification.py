@@ -8,7 +8,7 @@ from typing import Protocol
 
 from django.conf import settings
 
-RUBRIC_VERSION = "2026-11-rubrica-1"
+RUBRIC_VERSION = "2026-11-rubrica-4-leer-primero"
 VALID_MIN_SCORE = 2  # citations scored 2 or 3 count for TC
 SCORES = (0, 1, 2, 3)
 MAX_JUSTIFICATION = 400

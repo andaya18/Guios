@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 
@@ -121,6 +122,12 @@ AI_MODEL = os.getenv("AI_MODEL", "")
 AI_TIMEOUT_SECONDS = int(os.getenv("AI_TIMEOUT_SECONDS", "90"))
 # Gemini 3 recommends 1.0; 0 was requested for repeatability, which the hash cache guarantees anyway.
 AI_TEMPERATURE = float(os.getenv("AI_TEMPERATURE", "0"))
+# "url": read each document's DOI page (free tier). "search": Google Search grounding (needs billing).
+AI_GROUNDING = os.getenv("AI_GROUNDING", "url")
+
+# Tests never reach the real AI provider (no quota spent, no network, deterministic runs).
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    AI_PROVIDER, AI_API_KEY = "disabled", ""
 
 # Expert importance (IE) used with the literature importance (IL); fixed at 3 by the thesis.
 LITERATURE_EXPERT_IMPORTANCE = int(os.getenv("LITERATURE_EXPERT_IMPORTANCE", "3"))

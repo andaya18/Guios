@@ -17,12 +17,14 @@ CITATIONS = [
 
 
 DEFAULT_CHUNKS = [{"web": {"uri": "https://doi.org/x", "title": "doi.org"}}]
+DEFAULT_URLS = [{"retrievedUrl": "https://doi.org/x", "urlRetrievalStatus": "URL_RETRIEVAL_STATUS_SUCCESS"}]
 
 
-def api_body(payload_text, chunks=None):
+def api_body(payload_text, chunks=None, urls=None):
     return json.dumps({"candidates": [{
         "content": {"parts": [{"text": payload_text}]},
         "groundingMetadata": {"groundingChunks": DEFAULT_CHUNKS if chunks is None else chunks},
+        "urlContextMetadata": {"urlMetadata": DEFAULT_URLS if urls is None else urls},
     }]}).encode()
 
 
@@ -40,7 +42,7 @@ GOOD = json.dumps({"citas": [
 ]})
 
 
-@override_settings(AI_PROVIDER="gemini", AI_API_KEY="test-key", AI_MODEL="gemini-test", AI_TEMPERATURE=0.0, AI_TIMEOUT_SECONDS=5)
+@override_settings(AI_PROVIDER="gemini", AI_API_KEY="test-key", AI_MODEL="gemini-test", AI_TEMPERATURE=0.0, AI_TIMEOUT_SECONDS=5, AI_GROUNDING="url")
 class GeminiVerifierTests(SimpleTestCase):
     def verify(self, body=None, error=None):
         with patch("apps.ai.gemini.urlopen") as urlopen:
@@ -55,13 +57,14 @@ class GeminiVerifierTests(SimpleTestCase):
         verdict, call = self.verify(api_body(GOOD))
 
         self.assertEqual([(s.subfactor_id, s.score) for s in verdict.scores], [(7, 3), (9, 2)])
-        self.assertEqual(verdict.sources, ({"title": "doi.org", "uri": "https://doi.org/x"},))
+        self.assertIn({"title": "Página leída", "uri": "https://doi.org/x"}, verdict.sources)
         self.assertEqual(verdict.model, "gemini-test")
         request = call.args[0]
         self.assertEqual(request.get_header("X-goog-api-key"), "test-key")
         self.assertNotIn("test-key", request.full_url)
         sent = json.loads(request.data)
-        self.assertEqual(sent["tools"], [{"googleSearch": {}}])
+        self.assertEqual(sent["tools"], [{"urlContext": {}}])
+        self.assertIn("https://doi.org/x", sent["contents"][0]["parts"][0]["text"])
         self.assertEqual(sent["generationConfig"]["temperature"], 0.0)
         self.assertEqual(sent["generationConfig"]["responseMimeType"], "application/json")
         self.assertIn("Rúbrica", sent["contents"][0]["parts"][0]["text"])
@@ -100,9 +103,31 @@ class GeminiVerifierTests(SimpleTestCase):
                 self.verify(api_body(payload))
             self.assertEqual(raised.exception.kind, "invalid_response")
 
-    def test_answer_without_web_search_is_a_search_failure(self):
+    def test_unreadable_document_page_is_a_search_failure(self):
+        failed = [{"retrievedUrl": "https://doi.org/x", "urlRetrievalStatus": "URL_RETRIEVAL_STATUS_ERROR"}]
         with self.assertRaises(AIUnavailable) as raised:
-            self.verify(api_body(GOOD, chunks=[]))
+            self.verify(api_body(GOOD, chunks=[], urls=failed))
+
+        self.assertEqual(raised.exception.kind, "network")
+
+    def test_document_without_url_cannot_be_read(self):
+        with patch("apps.ai.gemini.urlopen") as urlopen, self.assertRaises(AIUnavailable) as raised:
+            get_verifier().verify({**DOCUMENT, "url": ""}, CITATIONS)
+
+        self.assertEqual(raised.exception.kind, "network")
+        urlopen.assert_not_called()
+
+    @override_settings(AI_GROUNDING="search")
+    def test_search_mode_uses_google_search(self):
+        verdict, call = self.verify(api_body(GOOD, urls=[]))
+
+        self.assertEqual(json.loads(call.args[0].data)["tools"], [{"googleSearch": {}}])
+        self.assertEqual(verdict.sources, ({"title": "doi.org", "uri": "https://doi.org/x"},))
+
+    @override_settings(AI_GROUNDING="search")
+    def test_search_mode_without_results_is_a_search_failure(self):
+        with self.assertRaises(AIUnavailable) as raised:
+            self.verify(api_body(GOOD, chunks=[], urls=[]))
 
         self.assertEqual(raised.exception.kind, "network")
 
@@ -126,3 +151,29 @@ class ProviderSelectionTests(SimpleTestCase):
     @override_settings(AI_PROVIDER="gemini", AI_API_KEY="k", AI_MODEL="")
     def test_default_model_is_used_when_unset(self):
         self.assertEqual(get_verifier().model, gemini.DEFAULT_MODEL)
+
+
+class ReadingUrlsTests(SimpleTestCase):
+    def test_doi_adds_open_scholarly_metadata_sources(self):
+        urls = gemini.reading_urls("https://doi.org/10.1016/j.jss.2021.111152")
+
+        self.assertEqual(urls, [
+            "https://doi.org/10.1016/j.jss.2021.111152",
+            "https://api.openalex.org/works/doi:10.1016/j.jss.2021.111152",
+            "https://api.crossref.org/works/10.1016/j.jss.2021.111152",
+            "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/j.jss.2021.111152?fields=title,year,venue,abstract,publicationTypes",
+        ])
+
+    def test_non_doi_link_is_read_as_is(self):
+        self.assertEqual(gemini.reading_urls("https://example.org/paper.pdf"), ["https://example.org/paper.pdf"])
+
+    def test_prompt_lists_every_reading_url(self):
+        prompt = gemini.build_prompt({**DOCUMENT, "url": "https://doi.org/10.2196/45242"}, CITATIONS, "url")
+
+        self.assertIn("https://api.openalex.org/works/doi:10.2196/45242", prompt)
+        self.assertIn("https://api.crossref.org/works/10.2196/45242", prompt)
+
+    def test_prompt_requires_reading_the_pages_first(self):
+        prompt = gemini.build_prompt({**DOCUMENT, "url": "https://doi.org/10.2196/45242"}, CITATIONS, "url")
+
+        self.assertTrue(prompt.startswith(gemini.READ_FIRST))

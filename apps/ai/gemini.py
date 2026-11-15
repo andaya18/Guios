@@ -1,7 +1,10 @@
-"""Gemini citation verifier: Google Search grounding + strict JSON output, stdlib HTTP only.
+"""Gemini citation verifier: reads each document on the web + strict JSON output, stdlib HTTP only.
 
 Configuration (environment variables): AI_PROVIDER=gemini, AI_API_KEY, AI_MODEL, AI_TEMPERATURE,
-AI_TIMEOUT_SECONDS. The key travels in the x-goog-api-key header, never in the URL or the logs.
+AI_TIMEOUT_SECONDS, AI_GROUNDING. The key travels in the x-goog-api-key header, never in the URL or logs.
+
+AI_GROUNDING="url" (default) reads the document's own DOI/link page with the urlContext tool, which the
+free tier allows. AI_GROUNDING="search" uses Google Search grounding, which needs a billed project.
 """
 import json
 import socket
@@ -12,7 +15,29 @@ from django.conf import settings
 
 from .verification import RUBRIC, AIUnavailable, DocumentVerdict, register, validate_scores
 
-DEFAULT_MODEL = "gemini-3-flash-preview"  # Gemini 3+ is required to combine search with JSON output
+DEFAULT_MODEL = "gemini-3-flash-preview"  # Gemini 3+ is required to combine web tools with JSON output
+GROUNDING_TOOLS = {"url": "urlContext", "search": "googleSearch"}
+URL_SUCCESS = "URL_RETRIEVAL_STATUS_SUCCESS"
+DOI_PREFIX = "https://doi.org/"
+# Without this, long prompts get answered from memory and come back with no pages read (seen with real calls).
+READ_FIRST = (
+    "Antes de responder, usa la herramienta de lectura de URL para abrir TODAS las páginas indicadas; "
+    "no respondas de memoria."
+)
+# Open scholarly records of a DOI: publishers often block automated reads of the article page.
+OPEN_METADATA = (
+    "https://api.openalex.org/works/doi:{doi}",
+    "https://api.crossref.org/works/{doi}",
+    "https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=title,year,venue,abstract,publicationTypes",
+)
+
+
+def reading_urls(url):
+    """Pages the model reads for a document: the link itself plus open metadata records for a DOI."""
+    if url.startswith(DOI_PREFIX):
+        doi = url[len(DOI_PREFIX):]
+        return [url] + [template.format(doi=doi) for template in OPEN_METADATA]
+    return [url]
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 RESPONSE_SCHEMA = {
@@ -35,11 +60,20 @@ RESPONSE_SCHEMA = {
 }
 
 
-def build_prompt(document, citations):
-    """Deterministic prompt: same document and citations always give the same text."""
+def build_prompt(document, citations, grounding="url"):
+    """Deterministic prompt: same document, citations and grounding always give the same text."""
+    if grounding == "url":
+        pages = " ".join(reading_urls(document.get("url", "")))
+        action = (
+            f"Lee estas páginas del documento (artículo y registros académicos abiertos): {pages} . "
+            "Con lo que puedas leer, evalúa si el documento respalda cada subfactor listado."
+        )
+    else:
+        action = "Busca en internet el documento indicado y evalúa si respalda cada subfactor listado."
     lines = [
+        *([READ_FIRST, ""] if grounding == "url" else []),
         "Eres un revisor de literatura científica sobre adopción de software libre (FLOSS).",
-        "Busca en internet el documento indicado y evalúa si respalda cada subfactor listado.",
+        action,
         "",
         RUBRIC,
         "",
@@ -62,12 +96,28 @@ def build_prompt(document, citations):
     return "\n".join(lines)
 
 
+def _sources(candidate):
+    """Pages the model actually read (urlContext) plus search results (googleSearch)."""
+    read = [
+        {"title": "Página leída", "uri": item.get("retrievedUrl", "")}
+        for item in (candidate.get("urlContextMetadata") or {}).get("urlMetadata") or []
+        if isinstance(item, dict) and item.get("urlRetrievalStatus") == URL_SUCCESS
+    ]
+    found = [
+        {"title": chunk["web"].get("title", ""), "uri": chunk["web"].get("uri", "")}
+        for chunk in (candidate.get("groundingMetadata") or {}).get("groundingChunks") or []
+        if isinstance(chunk, dict) and chunk.get("web")
+    ]
+    return tuple(read + found)
+
+
 class GeminiVerifier:
-    def __init__(self, api_key, model, temperature, timeout):
+    def __init__(self, api_key, model, temperature, timeout, grounding="url"):
         self._api_key = api_key
         self.model = model or DEFAULT_MODEL
         self.temperature = temperature
         self.timeout = timeout
+        self.grounding = grounding if grounding in GROUNDING_TOOLS else "url"
 
     def _post(self, body):
         request = Request(
@@ -91,10 +141,12 @@ class GeminiVerifier:
             raise AIUnavailable("network", str(error.reason)) from None
 
     def verify(self, document, citations):
-        prompt = build_prompt(document, citations)
+        if self.grounding == "url" and not document.get("url"):
+            raise AIUnavailable("network", "el documento no tiene DOI ni enlace para leerlo")
+        prompt = build_prompt(document, citations, self.grounding)
         raw = self._post({
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "tools": [{"googleSearch": {}}],
+            "tools": [{GROUNDING_TOOLS[self.grounding]: {}}],
             "generationConfig": {
                 "temperature": self.temperature,
                 "responseMimeType": "application/json",
@@ -107,14 +159,10 @@ class GeminiVerifier:
             payload = json.loads(text)
         except (ValueError, KeyError, IndexError, TypeError):
             raise AIUnavailable("invalid_response", "la respuesta no es JSON válido") from None
-        chunks = (candidate.get("groundingMetadata") or {}).get("groundingChunks") or []
-        sources = tuple(
-            {"title": chunk["web"].get("title", ""), "uri": chunk["web"].get("uri", "")}
-            for chunk in chunks if isinstance(chunk, dict) and chunk.get("web")
-        )
+        sources = _sources(candidate)
         if not sources:
-            # The rubric needs evidence from the web; an answer without search is not trusted.
-            raise AIUnavailable("network", "la búsqueda web no devolvió fuentes")
+            # The rubric needs evidence from the web; an answer that read nothing is not trusted.
+            raise AIUnavailable("network", "no se pudo leer el documento en la web")
         return DocumentVerdict(
             model=self.model,
             prompt=prompt,
@@ -129,4 +177,5 @@ register("gemini", lambda: GeminiVerifier(
     model=settings.AI_MODEL,
     temperature=settings.AI_TEMPERATURE,
     timeout=settings.AI_TIMEOUT_SECONDS,
+    grounding=settings.AI_GROUNDING,
 ))
