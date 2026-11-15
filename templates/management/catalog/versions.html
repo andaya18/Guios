@@ -46,7 +46,7 @@
         <h2 class="panel__title panel__title--padded">Cambios de v{{ other.number }} respecto a v{{ base.number }} ({{ changes|length }})</h2>
         {% include "management/catalog/_changes.html" with before_label="Antes" after_label="Después" %}
         {% else %}
-        {% include "components/empty.html" with title="No hay otra versión para comparar" %}
+        {% include "components/empty.html" with title="No hay otra versión para comparar" icon="layers" %}
         {% endif %}
     </section>
     <aside class="panel rules">

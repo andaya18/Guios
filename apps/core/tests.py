@@ -106,3 +106,21 @@ class FilterTests(TestCase):
 
     def test_ago_short_compacts_hours(self):
         self.assertEqual(ago_short(timezone.now() - timedelta(hours=2, minutes=5)), "2 h")
+
+
+class EmptyStateIconTests(TestCase):
+    def test_empty_state_renders_the_requested_icon(self):
+        from django.template.loader import render_to_string
+
+        html = render_to_string("components/empty.html", {"title": "Sin datos", "icon": "clipboard"})
+
+        self.assertIn('<span class="empty__icon" aria-hidden="true"><svg', html)
+        self.assertIn('<rect x="6" y="4"', html)
+
+    def test_empty_state_has_a_default_icon(self):
+        from django.template.loader import render_to_string
+
+        html = render_to_string("components/empty.html", {"title": "Sin datos"})
+
+        self.assertIn("<svg", html)
+        self.assertIn("M3 13h5", html)

@@ -88,7 +88,7 @@
             {% if page_obj.paginator.num_pages > 1 %}{% include "components/pagination.html" %}{% endif %}
         </footer>
         {% else %}
-        {% include "components/empty.html" with title="Aún no hay evaluaciones" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url=new_url action_label="+ Nueva evaluación" %}
+        {% include "components/empty.html" with title="Aún no hay evaluaciones" icon="clipboard" text="Cuando tu organización finalice evaluaciones o guardes un borrador, aparecerán aquí." action_url=new_url action_label="+ Nueva evaluación" %}
         {% endif %}
     </section>
 </form>

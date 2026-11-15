@@ -33,7 +33,7 @@
 </form>
 
 {% if items|length < 2 %}
-<section class="panel">{% include "components/empty.html" with title="Elige al menos dos evaluaciones" text="Marca de 2 a 4 evaluaciones finalizadas en el historial o agrégalas con el selector de arriba." action_url="/historial/" action_label="Ir al historial" %}</section>
+<section class="panel">{% include "components/empty.html" with title="Elige al menos dos evaluaciones" icon="compare" text="Marca de 2 a 4 evaluaciones finalizadas en el historial o agrégalas con el selector de arriba." action_url="/historial/" action_label="Ir al historial" %}</section>
 {% elif version_mismatch %}
 <div class="alert alert--warning" role="alert">{% include "components/icon.html" with name="alert" %}<p>{{ version_mismatch }}</p></div>
 {% else %}

@@ -52,7 +52,7 @@
         </table>
     </div>
     {% else %}
-    {% include "components/empty.html" with title="No hay organizaciones con estos filtros" text="Prueba con otro nombre o sector." %}
+    {% include "components/empty.html" with title="No hay organizaciones con estos filtros" icon="building" text="Prueba con otro nombre o sector." %}
     {% endif %}
 </section>
 <p class="alert info-note">{% include "components/icon.html" with name="info" %}Una organización con evaluaciones no se elimina: se desactiva y sus usuarios ya no pueden crear evaluaciones nuevas.</p>
