@@ -13,6 +13,10 @@ class CatalogVersion(models.Model):
     authorized_by = models.CharField(max_length=150, blank=True)
     # Date the methodological authority approved the change; may precede the publication (M02).
     authorized_at = models.DateField(null=True, blank=True)
+    # AI computation this version's IS came from; empty for versions loaded from the thesis/teacher tables.
+    importance_run = models.ForeignKey(
+        "literature.ImportanceRun", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
     published_at = models.DateTimeField(null=True, blank=True)
     # Quién publicó la versión; vacío en las creadas por cargar_catalogo (se muestra como "Sistema").
     published_by = models.ForeignKey(

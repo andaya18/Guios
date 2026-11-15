@@ -26,6 +26,14 @@ def stages(evaluation):
     ]
 
 
+def importance_origin(evaluation):
+    """HU-24/27: where the IS copied into this evaluation comes from (never queries the AI)."""
+    version = evaluation.catalog_version
+    run = version.importance_run
+    return {"is_ai": run is not None, "run": run, "version": version,
+            "url": f"/evaluaciones/{evaluation.pk}/importancia-sugerida/"}
+
+
 def _plural(count, word):
     return f"{count} {word}{'' if count == 1 else 'es'}"
 

@@ -5,6 +5,7 @@
     <p>Indica qué tan importante es cada factor para tu organización. El sistema cruza tu valor con la importancia sugerida y descarta los irrelevantes.</p>
     <div class="stage-intro__counters" id="stage1-counters">{% include "evaluations/partials/stage1_counters.html" %}</div>
 </div>
+{% include "evaluations/partials/importance_origin.html" %}
 {% csrf_token %}
 <div class="factors table-wrap">
     <table class="table">

@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/etapa-2/", views.stage2, name="stage2"),
     path("<int:pk>/etapa-3/", views.stage3, name="stage3"),
     path("<int:pk>/finalizar/", views.finish, name="finish"),
+    path("<int:pk>/importancia-sugerida/", views.importance_sources, name="importance_sources"),
     path("<int:pk>/factor/<int:factor_id>/", views.save_factor, name="factor"),
     path("<int:pk>/respuesta/<int:answer_id>/", views.save_answer, name="answer"),
 ]

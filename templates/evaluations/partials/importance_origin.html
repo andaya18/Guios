@@ -1,0 +1,13 @@
+{% if origin.is_ai %}
+<div class="alert alert--success importance-origin" role="status">
+    {% include "components/icon.html" with name="check-circle" %}
+    <p><strong>Importancia sugerida calculada con IA</strong> · catálogo v{{ origin.version.number }} · {{ origin.run.created_at|date:"d/m/Y" }} · modelo {{ origin.run.model }}.
+        <a class="link" href="{{ origin.url }}">Ver fuentes</a></p>
+</div>
+{% else %}
+<div class="alert alert--warning importance-origin" role="status">
+    {% include "components/icon.html" with name="alert" %}
+    <p><strong>Importancia sugerida de respaldo</strong> · catálogo v{{ origin.version.number }}: valores de referencia de la guía, sin consulta de IA.
+        <a class="link" href="{{ origin.url }}">Ver detalle</a></p>
+</div>
+{% endif %}

@@ -237,4 +237,6 @@ def apply_to_draft(run):
     scopes = dict(FactorVersion.objects.filter(version=draft).values_list("factor_id", "default_scope"))
     for row in run.factors.select_related("factor"):
         catalog.update_draft_factor(draft, row.factor, row.value, scopes[row.factor_id])
+    draft.importance_run = run
+    draft.save(update_fields=["importance_run"])
     return draft

@@ -142,3 +142,7 @@
     .recommendation-card { flex-wrap: wrap; }
 }
 .panel .field, .panel .form-row { margin-bottom: var(--space-4); }
+
+/* HU-24/27: origin of the suggested importance in E1 and its sources page */
+.importance-origin { margin-bottom: var(--space-4); }
+.literature__sources { margin-top: var(--space-5); }

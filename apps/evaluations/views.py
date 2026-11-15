@@ -11,7 +11,7 @@ from apps.core.decorators import decisor_required
 from . import presenters, workflow
 from .forms import NON_FREE_NOTICE, NewEvaluationForm
 from .models import EvaluationFactor, Software
-from .permissions import get_editable_draft
+from .permissions import get_editable_draft, get_visible_evaluation
 from .services import ESCALA
 
 SCALE = sorted(ESCALA.items())
@@ -83,6 +83,7 @@ def stage1(request, pk):
         groups=presenters.stage1_groups(factors),
         counts=presenters.stage1_counts(factors),
         scale=SCALE,
+        origin=presenters.importance_origin(evaluation),
     ))
 
 
@@ -182,3 +183,29 @@ def finish(request, pk):
         return _redirect_to_missing(request, error.items)
     messages.success(request, "Evaluación finalizada. Ya puedes exportarla, duplicarla o compararla.")
     return redirect(evaluation.get_absolute_url())
+
+
+# ---------- HU-25: sources of the suggested importance ----------
+
+@decisor_required
+def importance_sources(request, pk):
+    """Read-only: status, date and sources behind the IS copied into this evaluation (no AI call)."""
+    evaluation = get_visible_evaluation(request.user, pk)
+    run = evaluation.catalog_version.importance_run
+    documents = []
+    if run is not None:
+        from apps.literature.models import Document
+        from apps.literature.services import latest_assessments
+
+        assessments = latest_assessments()
+        for document in Document.objects.prefetch_related("citations__subfactor__factor"):
+            assessment = assessments.get(document.pk)
+            documents.append({"document": document, "assessment": assessment, "citations": document.citations.all()})
+    return render(request, "evaluations/importance_sources.html", {
+        "evaluation": evaluation,
+        "version": evaluation.catalog_version,
+        "run": run,
+        "rows": run.factors.select_related("factor") if run else [],
+        "values": evaluation.factors.select_related("factor").order_by("factor__order"),
+        "documents": documents,
+    })
