@@ -70,6 +70,8 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST": os.getenv("DB_HOST", ""),
         "PORT": os.getenv("DB_PORT", ""),
+        # Hosted PostgreSQL (Neon, Render) requires TLS: set DB_SSLMODE=require there.
+        "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE")} if os.getenv("DB_SSLMODE") else {},
     }
 }
 
@@ -91,6 +93,23 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static", BASE_DIR / "img"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  # filled by collectstatic on deploy (git-ignored)
+
+# Full URLs allowed to POST forms, e.g. https://guios-pro.onrender.com (comma separated).
+CSRF_TRUSTED_ORIGINS = [origin for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if origin]
+
+if not DEBUG:
+    # Production: WhiteNoise serves compressed, cache-busted static files without a separate web server.
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
+    # Render terminates HTTPS at its proxy and forwards the original scheme in this header.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "true").lower() == "true"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/acceso/"
