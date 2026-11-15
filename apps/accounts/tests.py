@@ -366,10 +366,15 @@ class AdminMailSettingsTests(TestCase):
         self.assertNotContains(response, "super-secreta")
         self.assertNotContains(response, "Tu organización se asigna")
 
-    def test_console_backend_is_explained(self):
-        response = self.client.get("/cuenta/configuracion/")
+    def test_without_smtp_the_panel_shows_status_without_development_texts(self):
+        from django.test import override_settings
 
-        self.assertContains(response, "Modo desarrollo: los códigos se muestran en la terminal del servidor.")
+        with override_settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
+            response = self.client.get("/cuenta/configuracion/")
+
+        self.assertContains(response, "No configurado")
+        for text in ("Modo desarrollo", "terminal", ".env", "Consola", "EMAIL_HOST_PASSWORD"):
+            self.assertNotContains(response, text)
 
     def test_send_test_email_to_admin(self):
         from django.core import mail
@@ -467,22 +472,13 @@ class VerificationEmailPathTests(TestCase):
         self.assertContains(response, "Escribe un correo válido para la prueba.")
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_console_mode_says_where_the_mail_went(self):
+    def test_without_smtp_the_test_mail_reports_it_was_not_sent(self):
         from django.test import override_settings
 
         with override_settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
             response = self.client.post("/cuenta/configuracion/correo-de-prueba/", follow=True)
 
-        self.assertContains(response, "Modo consola: el correo se imprimió en la terminal del servidor y no salió a internet.")
-
-    def test_console_mode_explains_how_to_enable_smtp(self):
-        from django.test import override_settings
-
-        with override_settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
-            response = self.client.get("/cuenta/configuracion/")
-
-        self.assertContains(response, "Para enviar correos reales")
-        self.assertContains(response, "EMAIL_HOST_PASSWORD")
+        self.assertContains(response, "No hay un servidor de correo configurado: el correo de prueba no se envió.")
 
     def test_smtp_failure_is_reported(self):
         with patch("apps.accounts.views.send_verification_email", side_effect=OSError("Connection refused")):

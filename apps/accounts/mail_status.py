@@ -7,9 +7,9 @@ CONSOLE_BACKENDS = {"django.core.mail.backends.console.EmailBackend", "django.co
 def mail_status():
     if settings.EMAIL_BACKEND in CONSOLE_BACKENDS:
         return {
-            "mode": "Consola",
+            "mode": "No configurado",
             "is_real": False,
-            "detail": "Modo desarrollo: los códigos se muestran en la terminal del servidor.",
+            "detail": "Los códigos de verificación no se están enviando por correo.",
         }
     return {
         "mode": "SMTP",
@@ -18,5 +18,5 @@ def mail_status():
         "user": settings.EMAIL_HOST_USER or "—",
         "sender": settings.DEFAULT_FROM_EMAIL,
         "tls": settings.EMAIL_USE_TLS,
-        "detail": "Las credenciales se configuran como variables de entorno del servidor.",
+        "detail": "Los códigos de verificación se envían desde esta cuenta.",
     }

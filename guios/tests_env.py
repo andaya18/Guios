@@ -39,3 +39,10 @@ class LoadEnvFileTests(TestCase):
 
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertEqual(load_env_file(path), ["OK"])
+
+    def test_last_definition_in_the_file_wins(self):
+        path = self.write("EMAIL_HOST_USER=vieja@x.com\nEMAIL_HOST_USER=nueva@x.com\n")
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            load_env_file(path)
+            self.assertEqual(os.environ["EMAIL_HOST_USER"], "nueva@x.com")

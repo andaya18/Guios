@@ -45,19 +45,6 @@
             <div class="field"><span class="field__label">Cuenta remitente</span><div class="field__control"><input type="text" value="{{ mail.user }}" readonly aria-label="Cuenta remitente">{% include "components/icon.html" with name="lock" %}</div></div>
             {% endif %}
             <p class="profile__note">{% include "components/icon.html" with name="info" %}{{ mail.detail }}</p>
-            {% if not mail.is_real %}
-            <div class="alert profile__smtp-help">
-                <p><strong>Para enviar correos reales</strong>, crea el archivo <code>.env</code> en la carpeta del proyecto (junto a <code>manage.py</code>) con estas líneas y reinicia el servidor:</p>
-                <pre>EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=true
-EMAIL_HOST_USER=tu_cuenta@gmail.com
-EMAIL_HOST_PASSWORD=contraseña_de_aplicacion
-DEFAULT_FROM_EMAIL=GUIOS PRO &lt;tu_cuenta@gmail.com&gt;</pre>
-                <p>En Gmail usa una contraseña de aplicación (Cuenta de Google → Seguridad → Verificación en 2 pasos → Contraseñas de aplicaciones). El archivo <code>.env</code> no se sube a git.</p>
-            </div>
-            {% endif %}
             <div class="field profile__test">
                 <label class="field__label" for="test-recipient">Enviar un código de prueba a</label>
                 <input id="test-recipient" name="recipient" type="email" value="{{ request.user.email }}" form="test-email-form">

@@ -210,5 +210,5 @@ def send_test_email(request):
     if mail_status()["is_real"]:
         messages.success(request, f"Correo de prueba enviado a {recipient}. Revisa también la carpeta de spam.")
     else:
-        messages.warning(request, "Modo consola: el correo se imprimió en la terminal del servidor y no salió a internet.")
+        messages.warning(request, "No hay un servidor de correo configurado: el correo de prueba no se envió.")
     return redirect("accounts:profile")
