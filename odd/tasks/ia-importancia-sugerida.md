@@ -18,7 +18,7 @@ Formula (doc/sugerida.pdf): r = TC / NS; IL = quartile of r over the 18 factors 
 - T2 [done 00ca93f] Table 14 data (13 documents, 71 citations, 37 subfactors) + fallback IS (Table 17 = catalog v2). S2, S8.
 - T3 [done 0261c32] apps/literature: models, hashes, compute with cache/fallback/discrepancy, loader + compute commands. S3, S5, S6, S7, S8.
 - T4 [done 0261c32] Gemini verifier (googleSearch + JSON schema, strict validation, error mapping). S2, S4, S6, S9.
-- T5 [in progress] Admin tab "Importancia sugerida": IS table with IA/Respaldo origin, documents and citations with scores and sources, add/delete, recalculate, draft catalog version. S3, S5, S8.
+- T5 [done 5b26b8b, 417037c] Admin tab "Importancia sugerida": IS table with IA/Respaldo origin, documents and citations with scores and sources, add/delete, recalculate, draft catalog version. S3, S5, S8.
 
 ## Log
 - L1 (user) request of 2026-11-14 with sections 1-4 (IS with AI, AI API, SMTP, closing checklist); formula source doc/sugerida.pdf.
@@ -26,3 +26,5 @@ Formula (doc/sugerida.pdf): r = TC / NS; IL = quartile of r over the 18 factors 
 - L3 (user, verbatim) "perfecto, ten en cuenta q la is debe ser calculada automáticamente con la IA  puede hacerlo con las formulas descritas, así queda perfecto, entonces continuemos con eso para terminar todo"
 - L4 Gemini docs: structured output + googleSearch only on Gemini 3+; Google recommends temperature 1.0 for Gemini 3 -> AI_TEMPERATURE configurable, default 0 per S3; repeatability guaranteed by hash cache.
 - L5 Subagent runtime unavailable (spawn pi ENOENT): T2 extracted inline. Documents without citations are never sent to the AI (found by view test).
+- L6 Real Gemini (free tier): googleSearch returns 429 without billing -> default AI_GROUNDING=url reads the DOI page plus OpenAlex/Crossref/Semantic Scholar (9e43d86); prompt must demand reading first or long prompts are answered from memory; command retries on quota (e4f9cf0). 12/13 documents verified with real calls.
+- L7 SMTP verified with real Gmail: login OK, verification email sent, full signup redirects to verification (rolled back). Failure path shows a clear message (e9ead41).
