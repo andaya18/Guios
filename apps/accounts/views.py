@@ -19,6 +19,7 @@ from apps.evaluations.selectors import decisor_dashboard
 
 from .forms import (
     ProfileForm,
+    VerificationEmailTemplateForm,
     GuiosPasswordResetForm,
     GuiosSetPasswordForm,
     LoginForm,
@@ -27,12 +28,14 @@ from .forms import (
     VerificationForm,
 )
 from .mail_status import mail_status
-from .models import PendingSignup, User
+from .models import PendingSignup, User, VerificationEmailTemplate
 from .services import (
     active_organization_for_email,
     create_pending_signup,
     email_domain,
+    fill_placeholders,
     new_code,
+    verification_template,
     resend_pending_signup_code,
     send_verification_email,
     VerificationEmailError,
@@ -183,11 +186,46 @@ def profile(request):
         messages.success(request, "Cambios guardados.")
         return redirect("accounts:profile")
     is_admin = request.user.role == "administrador"
-    return render(request, "accounts/profile.html", {
-        "form": form,
-        "organization": request.user.organization,
-        "mail": mail_status() if is_admin else None,
-    })
+    context = {"form": form, "organization": request.user.organization, "mail": mail_status() if is_admin else None}
+    if is_admin:
+        context.update(_template_context(request.session.pop("template_form_data", None)))
+    return render(request, "accounts/profile.html", context)
+
+
+def _template_context(posted=None):
+    subject, body = verification_template()
+    form = VerificationEmailTemplateForm(posted) if posted else VerificationEmailTemplateForm(initial={"subject": subject, "body": body})
+    if posted:
+        form.is_valid()  # re-show the rejected text with its error
+    return {
+        "template_form": form,
+        "template_preview": fill_placeholders(body, "Gabriela", "483920"),
+        "template_preview_subject": fill_placeholders(subject, "Gabriela", "483920"),
+        "template_is_custom": VerificationEmailTemplate.objects.exists(),
+    }
+
+
+@login_required
+@require_POST
+def save_verification_template(request):
+    """Administrators edit (or restore) the verification email sent to everyone who signs up."""
+    if request.user.role != "administrador":
+        raise PermissionDenied
+    if request.POST.get("restore"):
+        VerificationEmailTemplate.objects.all().delete()
+        messages.success(request, "Se restauró el mensaje predeterminado del código de verificación.")
+        return redirect("accounts:profile")
+    form = VerificationEmailTemplateForm(request.POST)
+    if not form.is_valid():
+        request.session["template_form_data"] = request.POST.dict()
+        messages.error(request, " ".join(form.errors.get("body", form.errors.get("subject", []))))
+        return redirect("accounts:profile")
+    VerificationEmailTemplate.objects.update_or_create(
+        pk=VerificationEmailTemplate.objects.values_list("pk", flat=True).first(),
+        defaults={**form.cleaned_data, "updated_by": request.user},
+    )
+    messages.success(request, "Mensaje del código de verificación guardado.")
+    return redirect("accounts:profile")
 
 
 @login_required
@@ -203,7 +241,7 @@ def send_test_email(request):
         messages.error(request, "Escribe un correo válido para la prueba.")
         return redirect("accounts:profile")
     try:
-        send_verification_email(recipient, new_code())
+        send_verification_email(recipient, new_code(), request.user.first_name)
     except Exception as error:  # SMTP errors vary by provider; show the reason to the admin.
         messages.error(request, f"No se pudo enviar el correo de prueba: {error}")
         return redirect("accounts:profile")

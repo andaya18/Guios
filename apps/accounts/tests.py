@@ -46,7 +46,7 @@ class SignupScreenTests(TestCase):
         self.assertContains(response, "Ingresa tu nombre")
         self.assertContains(response, "Ingresa tu apellido")
 
-    @patch("apps.accounts.services.send_mail")
+    @patch("apps.accounts.services.send_verification_email")
     def test_signup_first_step_shows_progress_and_sends_code(self, send_mail):
         response = self.client.post(
             reverse("accounts:signup"),
@@ -88,7 +88,7 @@ SIGNUP_DATA = {
 
 
 class PasswordPolicyTests(TestCase):
-    @patch("apps.accounts.services.send_mail")
+    @patch("apps.accounts.services.send_verification_email")
     def test_signup_rejects_password_without_uppercase_and_digit(self, send_mail):
         data = {**SIGNUP_DATA, "password": "sinmayusculas", "password_confirm": "sinmayusculas"}
 
@@ -98,7 +98,7 @@ class PasswordPolicyTests(TestCase):
         self.assertFalse(PendingSignup.objects.exists())
         send_mail.assert_not_called()
 
-    @patch("apps.accounts.services.send_mail")
+    @patch("apps.accounts.services.send_verification_email")
     def test_signup_rejects_short_password(self, send_mail):
         data = {**SIGNUP_DATA, "password": "Ab1", "password_confirm": "Ab1"}
 
@@ -110,7 +110,7 @@ class PasswordPolicyTests(TestCase):
 
 class VerificationTests(TestCase):
     def setUp(self):
-        with patch("apps.accounts.services.send_mail"):
+        with patch("apps.accounts.services.send_verification_email"):
             self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
         self.pending = PendingSignup.objects.get()
 
@@ -135,7 +135,7 @@ class VerificationTests(TestCase):
 
     @patch("apps.accounts.services.secrets.randbelow", return_value=123456)
     def test_six_digit_boxes_are_joined_into_one_code(self, _randbelow):
-        with patch("apps.accounts.services.send_mail"):
+        with patch("apps.accounts.services.send_verification_email"):
             self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
 
         response = self.post_code("123456")
@@ -143,7 +143,7 @@ class VerificationTests(TestCase):
         self.assertRedirects(response, reverse("accounts:signup_organization"), fetch_redirect_response=False)
         self.assertTrue(User.objects.filter(email=SIGNUP_DATA["email"]).exists())
 
-    @patch("apps.accounts.services.send_mail")
+    @patch("apps.accounts.services.send_verification_email")
     def test_resend_is_rejected_within_60_seconds(self, send_mail):
         response = self.client.post(reverse("accounts:signup_verify"), {"resend": "1"}, follow=True)
 
@@ -507,14 +507,14 @@ class EmailFailureTests(TestCase):
     """If SMTP fails, the visitor sees a clear message instead of a server error (§4.8 usability)."""
 
     def test_signup_shows_error_and_can_retry_when_mail_fails(self):
-        with patch("apps.accounts.services.send_mail", side_effect=OSError("SMTP down")):
+        with patch("apps.accounts.services.send_verification_email", side_effect=OSError("SMTP down")):
             response = self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No pudimos enviar el código de verificación. Intenta de nuevo en unos minutos.")
         self.assertFalse(PendingSignup.objects.exists())
 
-        with patch("apps.accounts.services.send_mail"):
+        with patch("apps.accounts.services.send_verification_email"):
             retry = self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
         self.assertRedirects(retry, reverse("accounts:signup_verify"), fetch_redirect_response=False)
 
@@ -523,13 +523,13 @@ class EmailFailureTests(TestCase):
 
         from django.utils import timezone
 
-        with patch("apps.accounts.services.send_mail"):
+        with patch("apps.accounts.services.send_verification_email"):
             self.client.post(reverse("accounts:signup"), SIGNUP_DATA)
         pending = PendingSignup.objects.get()
         PendingSignup.objects.filter(pk=pending.pk).update(expires_at=timezone.now() + timedelta(minutes=8))
         before = PendingSignup.objects.get()
 
-        with patch("apps.accounts.services.send_mail", side_effect=OSError("SMTP down")):
+        with patch("apps.accounts.services.send_verification_email", side_effect=OSError("SMTP down")):
             response = self.client.post(reverse("accounts:signup_verify"), {"resend": "1"}, follow=True)
 
         self.assertContains(response, "No pudimos enviar el código de verificación. Intenta de nuevo en unos minutos.")

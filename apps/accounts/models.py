@@ -68,3 +68,20 @@ class PendingSignup(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class VerificationEmailTemplate(models.Model):
+    """Single row with the administrator-edited verification email. Absent row = built-in default."""
+
+    subject = models.CharField(max_length=150)
+    body = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        verbose_name = "Mensaje del código de verificación"
+
+    def __str__(self):
+        return self.subject

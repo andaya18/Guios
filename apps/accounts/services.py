@@ -3,12 +3,13 @@ import secrets
 from datetime import timedelta
 
 from django.contrib.auth.hashers import check_password, make_password
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from .models import Organization, PendingSignup, User
+from .models import Organization, PendingSignup, User, VerificationEmailTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -40,25 +41,51 @@ def new_code():
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def deliver_code(email, code):
+def deliver_code(email, code, name=""):
     """Send the code, turning any SMTP/network failure into VerificationEmailError (logged for the admin)."""
     try:
-        send_verification_email(email, code)
+        send_verification_email(email, code, name)
     except Exception as error:  # SMTP providers raise many different exception types
         logger.exception("No se pudo enviar el código de verificación a %s", email)
         raise VerificationEmailError(EMAIL_FAILED_MESSAGE) from error
 
 
-def send_verification_email(email, code):
+DEFAULT_VERIFICATION_BODY = (
+    "Hola, {nombre}:\n\n"
+    "Tu código de verificación es: {codigo}\n\n"
+    "Vence en {minutos} minutos. Si no solicitaste una cuenta en GUIOS PRO, ignora este correo."
+)
+PLACEHOLDERS = ("{nombre}", "{codigo}", "{minutos}")
+
+
+def verification_template():
+    """(subject, body) edited by the administrator, or the built-in default."""
+    stored = VerificationEmailTemplate.objects.first()
+    if stored:
+        return stored.subject, stored.body
+    return VERIFICATION_SUBJECT, DEFAULT_VERIFICATION_BODY
+
+
+def fill_placeholders(text, name, code):
+    """Plain replacement (never str.format) so stray braces in an edited message cannot break sending."""
+    values = {"{nombre}": name or "usuario", "{codigo}": code, "{minutos}": str(int(VERIFICATION_TTL.total_seconds() // 60))}
+    for placeholder, value in values.items():
+        text = text.replace(placeholder, value)
+    return text
+
+
+def send_verification_email(email, code, name=""):
     """The only place that writes the verification email (signup, resend and the admin test)."""
-    send_mail(
-        VERIFICATION_SUBJECT,
-        f"Tu código de verificación es: {code}\n\n"
-        f"Vence en {int(VERIFICATION_TTL.total_seconds() // 60)} minutos. "
-        "Si no solicitaste una cuenta en GUIOS PRO, ignora este correo.",
-        None,
-        [email],
-    )
+    subject, body = verification_template()
+    text = fill_placeholders(body, name, code)
+    html = render_to_string("accounts/email/verification.html", {
+        "paragraphs": [line for line in text.split("\n\n") if line.strip()],
+        "code": code,
+        "minutes": int(VERIFICATION_TTL.total_seconds() // 60),
+    })
+    message = EmailMultiAlternatives(fill_placeholders(subject, name, code), text, None, [email])
+    message.attach_alternative(html, "text/html")
+    message.send()
 
 
 def normalize_email(email):
@@ -83,7 +110,7 @@ def create_pending_signup(email, first_name, last_name, password):
         },
     )
     try:
-        deliver_code(pending.email, code)
+        deliver_code(pending.email, code, first_name.strip())
     except VerificationEmailError:
         pending.delete()  # nothing was sent, so the visitor can simply try again
         raise
@@ -102,7 +129,7 @@ def resend_pending_signup_code(pending):
     if wait:
         raise ValueError(f"Podrás solicitar un nuevo código en {wait} segundos.")
     code = new_code()
-    deliver_code(pending.email, code)  # only replace the stored code once the new one was sent
+    deliver_code(pending.email, code, pending.name.partition("|")[0])  # only replace the stored code once the new one was sent
     pending.code_hash = make_password(code)
     pending.expires_at = timezone.now() + VERIFICATION_TTL
     pending.attempts = 0

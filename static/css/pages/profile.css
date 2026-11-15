@@ -18,3 +18,18 @@
 @media (max-width: 960px) {
     .profile__grid { grid-template-columns: 1fr; }
 }
+
+/* Verification email editor (administrators) */
+.email-editor { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-6); align-items: start; }
+.email-editor textarea { width: 100%; padding: var(--space-3); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font: inherit; line-height: 1.5; resize: vertical; }
+.email-editor textarea:focus { border-color: var(--color-primary); outline: none; box-shadow: var(--focus-ring); }
+.email-editor code { padding: 0 4px; border-radius: 4px; background: var(--color-surface-muted); font-size: var(--text-xs); }
+.email-editor__actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
+.email-preview__card { margin-top: var(--space-2); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-background); }
+.email-preview__subject { margin-bottom: var(--space-3); color: var(--color-text-strong); font-weight: var(--weight-semibold); }
+.email-preview__body { color: var(--color-text-secondary); font-size: var(--text-sm); line-height: 1.6; }
+.email-preview__code { width: fit-content; margin: var(--space-4) auto 0; padding: var(--space-2) var(--space-5); border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary-strong); font-size: var(--text-xl); font-weight: var(--weight-bold); letter-spacing: .3em; }
+
+@media (max-width: 960px) {
+    .email-editor { grid-template-columns: 1fr; }
+}

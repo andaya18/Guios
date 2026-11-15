@@ -63,10 +63,66 @@
         {% endif %}
     </div>
 
+    {% if template_form %}
+    <section class="panel">
+        <header class="panel__header">
+            <div>
+                <h2 class="panel__title">Mensaje del código de verificación</h2>
+                <p class="profile__note">Es el correo que recibe cada persona al crear su cuenta.{% if template_is_custom %} Mensaje personalizado.{% else %} Se usa el mensaje predeterminado.{% endif %}</p>
+            </div>
+        </header>
+        <div class="email-editor">
+            <div>
+                <div class="field{% if template_form.subject.errors %} field--invalid{% endif %}">
+                    <label class="field__label" for="template-subject">Asunto</label>
+                    <input id="template-subject" name="subject" type="text" maxlength="150" value="{{ template_form.subject.value|default:'' }}" form="template-form">
+                </div>
+                <div class="field{% if template_form.body.errors %} field--invalid{% endif %}">
+                    <label class="field__label" for="template-body">Mensaje</label>
+                    <textarea id="template-body" name="body" rows="8" form="template-form">{{ template_form.body.value|default:'' }}</textarea>
+                    {{ template_form.body.errors }}
+                    <span class="field__help">Variables: <code>{nombre}</code> nombre de la persona, <code>{codigo}</code> código de 6 dígitos (obligatorio), <code>{minutos}</code> minutos de validez. Deja una línea en blanco para separar párrafos.</span>
+                </div>
+                <div class="email-editor__actions">
+                    <button class="button button--secondary" type="submit" form="template-form" name="restore" value="1">Restaurar predeterminado</button>
+                    <button class="button button--primary" type="submit" form="template-form">Guardar mensaje</button>
+                </div>
+            </div>
+            <div class="email-preview" aria-label="Vista previa">
+                <p class="field__label">Vista previa</p>
+                <div class="email-preview__card">
+                    <p class="email-preview__subject" data-preview-subject>{{ template_preview_subject }}</p>
+                    <p class="email-preview__body" data-preview-body>{{ template_preview|linebreaksbr }}</p>
+                    <p class="email-preview__code">483920</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <div class="profile__actions">
         <a class="button button--secondary" href="{{ shell_home }}">Cancelar</a>
         <button class="button button--primary" type="submit">Guardar cambios</button>
     </div>
 </form>
+{% if template_form %}<form id="template-form" method="post" action="{% url 'accounts:save_verification_template' %}">{% csrf_token %}</form>{% endif %}
 {% if mail %}<form id="test-email-form" method="post" action="{% url 'accounts:send_test_email' %}">{% csrf_token %}</form>{% endif %}
+{% endblock %}
+{% block page_scripts %}
+<script>
+// Live preview of the verification email with sample values (the server renders the real one).
+(() => {
+    const subject = document.getElementById("template-subject");
+    const body = document.getElementById("template-body");
+    if (!subject || !body) return;
+    const sample = { "{nombre}": "Gabriela", "{codigo}": "483920", "{minutos}": "10" };
+    const fill = (text) => Object.entries(sample).reduce((out, [key, value]) => out.split(key).join(value), text);
+    const update = () => {
+        document.querySelector("[data-preview-subject]").textContent = fill(subject.value);
+        document.querySelector("[data-preview-body]").innerText = fill(body.value);
+    };
+    subject.addEventListener("input", update);
+    body.addEventListener("input", update);
+})();
+</script>
 {% endblock %}

@@ -147,3 +147,16 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["first_name", "last_name", "area"]
+
+
+class VerificationEmailTemplateForm(forms.Form):
+    """Administrator-edited subject and body of the verification email."""
+
+    subject = forms.CharField(label="Asunto", max_length=150)
+    body = forms.CharField(label="Mensaje", widget=forms.Textarea(attrs={"rows": 7}))
+
+    def clean_body(self):
+        body = self.cleaned_data["body"].replace("\r\n", "\n").strip()
+        if "{codigo}" not in body:
+            raise ValidationError("El mensaje debe incluir {codigo} para que el usuario reciba su código.")
+        return body
