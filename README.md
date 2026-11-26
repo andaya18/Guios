@@ -1,264 +1,216 @@
 # GUIOS PRO
 
-Sistema web para evaluar la idoneidad de software con la guía GUIOS (Rea Sánchez, 2022).
-Hecho con Python 3.12 y Django 5.1. Usa SQLite en desarrollo y PostgreSQL en producción.
+Sistema web para evaluar la idoneidad de software con la guía GUIOS (Rea Sánchez, 2022), desarrollado
+con Python 3.12 y Django 5.1.
 
-**Contenido**
+## Presentación: todo local
 
-1. [Requisitos](#1-requisitos)
-2. [Clonar e instalar](#2-clonar-e-instalar)
-3. [Configurar el archivo .env](#3-configurar-el-archivo-env)
-4. [Preparar la base de datos](#4-preparar-la-base-de-datos)
-5. [Ejecutar y probar](#5-ejecutar-y-probar)
-6. [Pruebas automáticas](#6-pruebas-automáticas)
-7. [Problemas frecuentes](#7-problemas-frecuentes)
-8. [Despliegue en Render + Neon](#8-despliegue-en-render--neon)
+La aplicación se ejecuta en el computador desde el que se presenta y guarda los datos en SQLite (`db.sqlite3`).
+No necesita hosting ni una base de datos remota. El envío de códigos usa el servidor SMTP que configures y las
+sugerencias de IA usan Gemini; ambas integraciones requieren credenciales propias e internet.
 
-> **Regla de oro:** el archivo `.env` tiene tus contraseñas y tu clave de IA. **Nunca** lo subas a Git
-> (ya está en `.gitignore`). Cada integrante usa el suyo.
+### Recorrido rápido
 
----
+1. Clona el repositorio e instala las dependencias.
+2. Copia `.env.example` a `.env` y agrega tus propias credenciales de SMTP y Gemini.
+3. Crea las tablas, carga los datos iniciales y prepara las cuentas de prueba.
+4. Inicia Django localmente y abre `http://127.0.0.1:8000/`.
+
+> **No compartas ni subas `.env`.** Puede contener contraseñas de las cuentas de prueba.
+> Cada instalación debe configurar su propio archivo; Git ignora `.env`.
 
 ## 1. Requisitos
 
-| Necesitas | Para qué |
+| Requisito | Uso |
 |---|---|
-| [Python 3.12](https://www.python.org/downloads/) | Ejecutar el proyecto (marca "Add Python to PATH" al instalar). |
-| [Git](https://git-scm.com/downloads) | Clonar el repositorio. |
-| Una cuenta de Gmail con verificación en 2 pasos | Enviar el código de verificación por correo. |
-| Una clave de Gemini ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) | Calcular la importancia sugerida con IA. Es gratuita. |
+| Python 3.12 | Ejecutar Django |
+| Git | Clonar el proyecto |
+| PowerShell | Ejecutar los comandos de esta guía en Windows |
 
-El correo y la IA son opcionales para empezar: sin ellos el sistema funciona igual (ver sección 3).
+No necesitas Render ni Neon. Para usar correo real necesitas una cuenta con acceso SMTP; para las sugerencias
+de IA necesitas una clave de Gemini. Cada persona debe configurar sus propias credenciales en `.env`.
 
 ## 2. Clonar e instalar
 
-Los comandos son para **PowerShell en Windows**, desde la carpeta donde quieras el proyecto.
+En PowerShell, desde la carpeta donde guardarás el proyecto:
 
 ```powershell
 git clone https://github.com/andaya18/Guios.git
-cd Guios
-git switch feat/fidelidad-figma   # rama con el sistema completo (omítelo si ya está en main)
-
+Set-Location Guios
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements\development.txt
-```
-
-Si PowerShell no deja activar el entorno ("la ejecución de scripts está deshabilitada"), ejecuta una vez
-`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` y vuelve a intentarlo.
-
-## 3. Configurar el archivo .env
-
-Copia la plantilla y edita la copia:
-
-```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements\development.txt
 Copy-Item .env.example .env
 notepad .env
 ```
 
-El sistema lee `.env` al arrancar. **Después de editarlo, reinicia el servidor.**
+Si `py -3.12` no se reconoce, instala Python 3.12 y vuelve a abrir PowerShell. Mantén el archivo `.env`
+junto a `manage.py`; Django lo lee al arrancar.
 
-### 3.1 Correo para el código de verificación (Gmail)
+## 3. Configurar `.env`
 
-Sin esta configuración el código **no llega por correo**: se imprime en la terminal donde corre el servidor
-(sirve para probar). Para enviarlo de verdad:
+### Base local
 
-1. Entra a tu cuenta de Google → **Seguridad** → activa la **Verificación en 2 pasos**.
-2. Abre [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) y crea una
-   **contraseña de aplicación** (nombre: "GUIOS PRO"). Son 16 letras: cópialas **sin espacios**.
-   No es la contraseña de tu cuenta.
-3. En `.env`, reemplaza la línea `EMAIL_BACKEND=...console...` y completa:
+SQLite se guarda en `db.sqlite3` junto a `manage.py`. Asegúrate de que `.env` tenga esta configuración local:
+
+```ini
+DATABASE_URL=
+DATABASE_URL_UNPOOLED=
+DJANGO_USE_UNPOOLED_DATABASE=false
+DB_ENGINE=django.db.backends.sqlite3
+```
+
+Si ya tenías una `.env` con una URL de PostgreSQL, bórrala o déjala vacía para usar SQLite. Reinicia Django
+después de editar la configuración.
+
+Confirma que Django seleccionó SQLite:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "from django.conf import settings; print(settings.DATABASES['default']['ENGINE'])"
+```
+
+Debe mostrar `django.db.backends.sqlite3`. Si no coincide, revisa `.env` y las variables de entorno de Windows:
+las variables del proceso tienen prioridad.
+
+### Correo de verificación
+
+Configura en `.env` el servidor SMTP de tu proveedor de correo y completa estos campos con sus valores:
 
 ```ini
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
+EMAIL_HOST=
 EMAIL_PORT=587
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
 EMAIL_USE_TLS=true
-EMAIL_HOST_USER=tu_cuenta@gmail.com
-EMAIL_HOST_PASSWORD=abcdefghijklmnop
-DEFAULT_FROM_EMAIL=GUIOS PRO <tu_cuenta@gmail.com>
+DEFAULT_FROM_EMAIL=tu-correo-verificado@ejemplo.com
 ```
 
-`EMAIL_HOST_USER` y `DEFAULT_FROM_EMAIL` deben ser **la misma cuenta** que generó la contraseña de aplicación.
-Si tu correo institucional no permite contraseñas de aplicación, usa un Gmail personal.
+El remitente debe estar autorizado por el proveedor SMTP. Al registrar una cuenta, Django enviará el código a
+ese correo. Si SMTP no está configurado correctamente, el envío fallará; no hay un fallback automático a la
+terminal.
 
-### 3.2 IA de la importancia sugerida (Gemini)
+### Sugerencias de IA
+
+Para habilitar Gemini, configura tu propia clave en `.env`:
 
 ```ini
 AI_PROVIDER=gemini
-AI_API_KEY=tu_clave_de_gemini
+AI_API_KEY=tu-clave-de-gemini
 AI_MODEL=gemini-3-flash-preview
+AI_GROUNDING=url
 ```
 
-Sin clave, el sistema usa los valores de respaldo del docente (Tabla 17) y lo indica en pantalla.
+La app necesita conexión a internet para consultar Gemini. Sin clave, sin conexión o si se alcanza la cuota,
+se usan los valores de respaldo de la Tabla 17.
 
-## 4. Preparar la base de datos
+### Cuentas de prueba
 
-Se hace una sola vez (y otra vez cuando haya migraciones nuevas):
+Agrega a tu `.env` correos y contraseñas propios para crear un administrador y un decisor. No uses las
+credenciales de ejemplo en un archivo del repositorio:
+
+```ini
+GUIOS_TEST_ADMIN_EMAIL=
+GUIOS_TEST_ADMIN_PASSWORD=
+GUIOS_TEST_DECISOR_EMAIL=
+GUIOS_TEST_DECISOR_PASSWORD=
+# Opcionales:
+GUIOS_TEST_ADMIN_FIRST_NAME=Administrador
+GUIOS_TEST_DECISOR_FIRST_NAME=Decisor
+```
+
+Las contraseñas deben cumplir las validaciones del proyecto. El comando de provisión no cambia cuentas
+existentes; si los correos ya existen con otra contraseña o rol, informa el conflicto.
+
+## 4. Preparar la base local y las cuentas
+
+Ejecuta estos comandos desde la raíz del proyecto. Django crea y actualiza `db.sqlite3` localmente:
 
 ```powershell
-python manage.py migrate
-python manage.py cargar_catalogo
-python manage.py cargar_literatura
-python manage.py createsuperuser
+.\.venv\Scripts\python.exe manage.py migrate
 ```
 
-`createsuperuser` pide **correo y contraseña** (en este sistema el correo es el usuario) y crea la cuenta con
-rol **Administrador**. Los decisores no se crean aquí: se registran solos en la página (sección 5).
-
-Opcional, para calcular ya la importancia sugerida con IA (también hay un botón en la pantalla):
+Carga el catálogo metodológico y la literatura inicial:
 
 ```powershell
-python manage.py calcular_importancia_sugerida
+.\.venv\Scripts\python.exe manage.py cargar_catalogo
+.\.venv\Scripts\python.exe manage.py cargar_literatura
 ```
 
-El plan gratuito de Gemini limita las llamadas por minuto; el comando espera y continúa solo, y lo ya
-verificado queda guardado.
-
-## 5. Ejecutar y probar
+Si configuraste las cuatro variables `GUIOS_TEST_*` en `.env`, crea las cuentas de demostración:
 
 ```powershell
-python manage.py runserver
+.\.venv\Scripts\python.exe manage.py provision_test_users --confirm
 ```
 
-Abre [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+El administrador recibe permisos de administración. El decisor se crea sin organización; asígnale una desde
+la aplicación si necesitas demostrar funciones filtradas por organización. Si prefieres crear el administrador
+manualmente, usa `python manage.py createsuperuser`; el decisor puede registrarse desde la página **Crear
+cuenta**.
 
-**Probar el registro con código de verificación (decisor)**
+## 5. Ejecutar la presentación
 
-1. Ve a **Crear cuenta** (`/registro/`) con un correo **institucional** (Gmail y Hotmail se rechazan en el registro).
-2. La contraseña debe tener al menos 8 caracteres, una mayúscula y un número, y no parecerse a tu nombre.
-3. Llega un correo con el código de 6 dígitos (o aparece en la terminal si no configuraste Gmail).
-4. Escribe el código en las 6 casillas. Vence en 10 minutos y tiene 5 intentos; puedes reenviarlo cada 60 s.
-5. Si eres el primero de tu dominio, registra tu organización. Luego entras al **Panel de inicio**.
+Inicia la aplicación local:
 
-**Probar como administrador**
+```powershell
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
 
-1. Entra en `/acceso/` con el correo y la contraseña del paso `createsuperuser`.
-2. En **Configuración** (tu nombre, abajo a la izquierda):
-   - verifica que "Modo de envío" diga **SMTP**;
-   - envíate un **correo de prueba**;
-   - personaliza el **mensaje del código de verificación** (variables `{nombre}`, `{codigo}`, `{minutos}`).
-3. En **Catálogo metodológico → Importancia sugerida** revisa el cálculo con IA y sus fuentes.
+Abre [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Inicia sesión en `/acceso/` con la cuenta de
+administrador o decisor. Para completar un registro nuevo, revisa el correo indicado en el formulario y usa
+el código de seis dígitos que envía Django mediante SMTP.
+
+Para que el docente pueda abrir la presentación desde otro computador, ambos equipos necesitarían una red
+accesible o un servidor web; esta guía deliberadamente no configura ese despliegue.
 
 ## 6. Pruebas automáticas
 
-```powershell
-python manage.py test
-```
-
-Tardan unos 3 minutos. Nunca llaman a Gemini ni envían correos reales.
-
-## 7. Problemas frecuentes
-
-| Síntoma | Causa y solución |
-|---|---|
-| "No pudimos enviar el código de verificación" o "Connection unexpectedly closed" | Gmail rechazó la contraseña. Genera una nueva **contraseña de aplicación** con la misma cuenta de `EMAIL_HOST_USER`, cópiala sin espacios y reinicia el servidor. |
-| Configuración dice "No configurado" | El servidor no leyó `.env`: debe estar junto a `manage.py`, llamarse exactamente `.env` (no `.env.txt`) y el servidor debe reiniciarse. |
-| La importancia sugerida muestra "Valores de respaldo" | Sin clave de IA, o cuota de Gemini agotada. Espera un minuto y pulsa **Recalcular ahora**. |
-| "Correo o contraseña incorrectos" | Revisa el correo exacto. Para cambiar la contraseña: `python manage.py changepassword correo@dominio`. |
-| `no such table` | Faltan migraciones: `python manage.py migrate`. |
-
----
-
-## 8. Despliegue en Render + Neon
-
-Render ejecuta la aplicación y Neon guarda la base PostgreSQL. Ambos tienen plan gratuito.
-No uses la base PostgreSQL gratuita de Render: se elimina a los 30 días.
-
-### 8.1 Base de datos en Neon
-
-1. Crea una cuenta en [neon.tech](https://neon.tech) y un proyecto (región cercana, por ejemplo `us-east-1`).
-2. En **Connection details** copia: host, nombre de la base, usuario y contraseña.
-
-### 8.2 Servicio web en Render
-
-1. Crea una cuenta en [render.com](https://render.com) y conecta tu GitHub.
-2. **New → Web Service** → elige el repositorio `andaya18/Guios` y la rama que se va a publicar.
-3. Configura:
-
-| Campo | Valor |
-|---|---|
-| Runtime | Python 3 |
-| Build Command | `pip install -r requirements/production.txt && python manage.py collectstatic --noinput && DJANGO_USE_UNPOOLED_DATABASE=true python manage.py migrate && python manage.py cargar_catalogo && python manage.py cargar_literatura` |
-| Start Command | `gunicorn guios.wsgi:application` |
-
-4. En **Environment** agrega las variables (el `.env` no se sube; aquí van los valores reales):
-
-| Variable | Valor |
-|---|---|
-| `PYTHON_VERSION` | `3.12.4` |
-| `DJANGO_DEBUG` | `false` |
-| `DJANGO_SECRET_KEY` | Una clave larga y aleatoria. Genérala con `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
-| `DJANGO_ALLOWED_HOSTS` | `tu-servicio.onrender.com` |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://tu-servicio.onrender.com` |
-| `DATABASE_URL` | URL pooled de Neon para las peticiones de la aplicación |
-| `DATABASE_URL_UNPOOLED` | URL directa de Neon para ejecutar migraciones |
-| `EMAIL_BACKEND` | `apps.accounts.email_backends.BrevoEmailBackend` |
-| `BREVO_API_KEY` | API key de Brevo, guardada como secreto en Render |
-| `DEFAULT_FROM_EMAIL` | Remitente verificado en Brevo |
-| `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` | Igual que en la sección 3.2 |
-
-Para migrar manualmente desde PowerShell, usa la URL directa durante ese comando:
+La suite debe ejecutarse contra SQLite, nunca contra una base de datos remota. En PowerShell:
 
 ```powershell
-$env:DJANGO_USE_UNPOOLED_DATABASE = "true"
+$names = @(
+    "DATABASE_URL", "DATABASE_URL_UNPOOLED", "DJANGO_USE_UNPOOLED_DATABASE",
+    "DB_ENGINE", "DB_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT",
+    "DB_SSLMODE", "EMAIL_BACKEND", "AI_PROVIDER"
+)
+$previous = @{}
+foreach ($name in $names) {
+    $previous[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
+}
 try {
-    .\.venv\Scripts\python.exe manage.py migrate
+    $env:DATABASE_URL = ""
+    $env:DATABASE_URL_UNPOOLED = ""
+    $env:DJANGO_USE_UNPOOLED_DATABASE = "false"
+    $env:DB_ENGINE = "django.db.backends.sqlite3"
+    $env:DB_NAME = Join-Path $PWD "db.sqlite3"
+    $env:DB_USER = ""
+    $env:DB_PASSWORD = ""
+    $env:DB_HOST = ""
+    $env:DB_PORT = ""
+    $env:DB_SSLMODE = ""
+    $env:EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    $env:AI_PROVIDER = "disabled"
+    .\.venv\Scripts\python.exe manage.py test
 } finally {
-    Remove-Item Env:DJANGO_USE_UNPOOLED_DATABASE -ErrorAction SilentlyContinue
+    foreach ($name in $names) {
+        if ($null -eq $previous[$name]) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        } else {
+            Set-Item "Env:$name" $previous[$name]
+        }
+    }
 }
 ```
 
-5. Pulsa **Create Web Service**. Cuando el log diga *Your service is live*, abre `https://tu-servicio.onrender.com`.
+Las pruebas no llaman a Gemini ni envían correos reales.
 
-Brevo envía por HTTPS (puerto 443), compatible con Render Free. Verifica el remitente en Brevo; autentica el dominio con DNS si tienes acceso para evitar que el proveedor reescriba el dominio del remitente. Mantén SMTP solo para despliegues que permitan tráfico saliente por puertos SMTP.
+## 7. Problemas frecuentes
 
-### 8.3 Después del primer despliegue
-
-- Para crear las cuentas de prueba en Render Free, sigue una sola vez el paso de provisión de la sección 8.4.
-- Entra con el administrador y, en **Configuración**, envía un correo de prueba.
-- En **Importancia sugerida** pulsa **Recalcular ahora** para el cálculo con IA.
-- Cada `git push` a la rama conectada vuelve a desplegar. Las migraciones y las cargas de datos son seguras
-  de repetir: no duplican ni borran información.
-- El plan gratuito de Render "duerme" el servicio tras 15 minutos sin uso; la primera visita tarda unos segundos.
-
-### 8.4 Crear cuentas de prueba en Render Free
-
-Render Free no incluye shell/SSH. Para crear las cuentas en la base Neon de producción:
-
-1. En **Environment** agrega temporalmente estas variables. Usa los correos y contraseñas de prueba;
-   no las compartas por chat.
-
-| Variable | Valor |
+| Síntoma | Qué revisar |
 |---|---|
-| `GUIOS_TEST_ADMIN_EMAIL` | Correo del administrador de prueba |
-| `GUIOS_TEST_DECISOR_EMAIL` | Correo distinto para el decisor |
-| `GUIOS_TEST_ADMIN_PASSWORD` | Contraseña del administrador que cumpla las validaciones |
-| `GUIOS_TEST_DECISOR_PASSWORD` | Contraseña del decisor que cumpla las validaciones |
-| `GUIOS_TEST_ADMIN_FIRST_NAME` | Opcional; por defecto `Administrador` |
-| `GUIOS_TEST_DECISOR_FIRST_NAME` | Opcional; por defecto `Decisor` |
+| Django no selecciona SQLite | Revisa `.env` y las variables de entorno de Windows; deben coincidir con la configuración local de esta guía. |
+| `no such table` o tabla inexistente | Ejecuta `migrate` y carga el catálogo y la literatura en la base local. |
+| No llega el código de registro | Revisa el host, puerto, usuario, contraseña y remitente SMTP; el proveedor debe permitir el envío. |
+| Se muestran valores de respaldo | Revisa la clave Gemini, la conexión a internet y la cuota disponible. |
+| Inicio de sesión rechazado | Comprueba que usas el correo y la contraseña de la cuenta creada en `db.sqlite3`. |
 
-2. Cambia temporalmente **Start Command** a:
-
-   ```text
-   python manage.py provision_test_users --confirm && gunicorn guios.wsgi:application
-   ```
-
-3. Guarda los cambios y espera a que el servicio quede *Live*. En los logs deben aparecer los mensajes de
-   creación. El comando solo crea cuentas ausentes; no cambia contraseñas ni permisos de cuentas existentes.
-4. Restaura **Start Command** a `gunicorn guios.wsgi:application` y elimina las variables `GUIOS_TEST_*`.
-   Guarda de nuevo para que los secretos dejen de estar configurados en el servicio.
-5. Inicia sesión con cada correo y su contraseña correspondiente. El decisor se crea sin organización; asígnale una
-   desde la administración si necesitas probar funciones filtradas por organización.
-
-No agregues estas variables a archivos del repositorio ni uses **Add from .env**.
-
-### 8.5 Subir cambios
-
-```powershell
-git add .
-git commit -m "feat: descripción del cambio"
-git push origin nombre-de-tu-rama
-```
-
-Luego abre un Pull Request en GitHub para que el equipo lo revise antes de unirlo a `main`.
+Al cambiar `.env`, detén y vuelve a iniciar `runserver` para que Django lea la nueva configuración.
