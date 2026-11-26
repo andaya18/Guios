@@ -197,7 +197,6 @@ No uses la base PostgreSQL gratuita de Render: se elimina a los 30 días.
 | `BREVO_API_KEY` | API key de Brevo, guardada como secreto en Render |
 | `DEFAULT_FROM_EMAIL` | Remitente verificado en Brevo |
 | `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` | Igual que en la sección 3.2 |
-| `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | Correo y contraseña del primer administrador |
 
 Para migrar manualmente desde PowerShell, usa la URL directa durante ese comando:
 
@@ -216,13 +215,45 @@ Brevo envía por HTTPS (puerto 443), compatible con Render Free. Verifica el rem
 
 ### 8.3 Después del primer despliegue
 
-- Entra con el administrador de `DJANGO_SUPERUSER_EMAIL` y, en **Configuración**, envía un correo de prueba.
+- Para crear las cuentas de prueba en Render Free, sigue una sola vez el paso de provisión de la sección 8.4.
+- Entra con el administrador y, en **Configuración**, envía un correo de prueba.
 - En **Importancia sugerida** pulsa **Recalcular ahora** para el cálculo con IA.
 - Cada `git push` a la rama conectada vuelve a desplegar. Las migraciones y las cargas de datos son seguras
   de repetir: no duplican ni borran información.
 - El plan gratuito de Render "duerme" el servicio tras 15 minutos sin uso; la primera visita tarda unos segundos.
 
-### 8.4 Subir cambios
+### 8.4 Crear cuentas de prueba en Render Free
+
+Render Free no incluye shell/SSH. Para crear las cuentas en la base Neon de producción:
+
+1. En **Environment** agrega temporalmente estas variables. Usa los correos y contraseñas de prueba;
+   no las compartas por chat.
+
+| Variable | Valor |
+|---|---|
+| `GUIOS_TEST_ADMIN_EMAIL` | Correo del administrador de prueba |
+| `GUIOS_TEST_DECISOR_EMAIL` | Correo distinto para el decisor |
+| `GUIOS_TEST_ADMIN_PASSWORD` | Contraseña del administrador que cumpla las validaciones |
+| `GUIOS_TEST_DECISOR_PASSWORD` | Contraseña del decisor que cumpla las validaciones |
+| `GUIOS_TEST_ADMIN_FIRST_NAME` | Opcional; por defecto `Administrador` |
+| `GUIOS_TEST_DECISOR_FIRST_NAME` | Opcional; por defecto `Decisor` |
+
+2. Cambia temporalmente **Start Command** a:
+
+   ```text
+   python manage.py provision_test_users --confirm && gunicorn guios.wsgi:application
+   ```
+
+3. Guarda los cambios y espera a que el servicio quede *Live*. En los logs deben aparecer los mensajes de
+   creación. El comando solo crea cuentas ausentes; no cambia contraseñas ni permisos de cuentas existentes.
+4. Restaura **Start Command** a `gunicorn guios.wsgi:application` y elimina las variables `GUIOS_TEST_*`.
+   Guarda de nuevo para que los secretos dejen de estar configurados en el servicio.
+5. Inicia sesión con cada correo y su contraseña correspondiente. El decisor se crea sin organización; asígnale una
+   desde la administración si necesitas probar funciones filtradas por organización.
+
+No agregues estas variables a archivos del repositorio ni uses **Add from .env**.
+
+### 8.5 Subir cambios
 
 ```powershell
 git add .
