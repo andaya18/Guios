@@ -193,7 +193,9 @@ No uses la base PostgreSQL gratuita de Render: se elimina a los 30 días.
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://tu-servicio.onrender.com` |
 | `DATABASE_URL` | URL pooled de Neon para las peticiones de la aplicación |
 | `DATABASE_URL_UNPOOLED` | URL directa de Neon para ejecutar migraciones |
-| `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | Igual que en la sección 3.1 |
+| `EMAIL_BACKEND` | `apps.accounts.email_backends.BrevoEmailBackend` |
+| `BREVO_API_KEY` | API key de Brevo, guardada como secreto en Render |
+| `DEFAULT_FROM_EMAIL` | Remitente verificado en Brevo |
 | `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` | Igual que en la sección 3.2 |
 | `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | Correo y contraseña del primer administrador |
 
@@ -209,6 +211,8 @@ try {
 ```
 
 5. Pulsa **Create Web Service**. Cuando el log diga *Your service is live*, abre `https://tu-servicio.onrender.com`.
+
+Brevo envía por HTTPS (puerto 443), compatible con Render Free. Verifica el remitente en Brevo; autentica el dominio con DNS si tienes acceso para evitar que el proveedor reescriba el dominio del remitente. Mantén SMTP solo para despliegues que permitan tráfico saliente por puertos SMTP.
 
 ### 8.3 Después del primer despliegue
 

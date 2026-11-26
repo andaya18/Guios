@@ -124,6 +124,7 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 EMAIL_TIMEOUT = 10
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 
 # Optional AI suggestions (apps.ai). Without a key the feature stays disabled.
 AI_PROVIDER = os.getenv("AI_PROVIDER", "disabled")
