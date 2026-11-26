@@ -179,7 +179,7 @@ No uses la base PostgreSQL gratuita de Render: se elimina a los 30 días.
 | Campo | Valor |
 |---|---|
 | Runtime | Python 3 |
-| Build Command | `pip install -r requirements/production.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py cargar_catalogo && python manage.py cargar_literatura && (python manage.py createsuperuser --noinput \|\| true)` |
+| Build Command | `pip install -r requirements/production.txt && python manage.py collectstatic --noinput && DJANGO_USE_UNPOOLED_DATABASE=true python manage.py migrate && python manage.py cargar_catalogo && python manage.py cargar_literatura` |
 | Start Command | `gunicorn guios.wsgi:application` |
 
 4. En **Environment** agrega las variables (el `.env` no se sube; aquí van los valores reales):
@@ -191,13 +191,22 @@ No uses la base PostgreSQL gratuita de Render: se elimina a los 30 días.
 | `DJANGO_SECRET_KEY` | Una clave larga y aleatoria. Genérala con `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
 | `DJANGO_ALLOWED_HOSTS` | `tu-servicio.onrender.com` |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://tu-servicio.onrender.com` |
-| `DB_ENGINE` | `django.db.backends.postgresql` |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` | Los datos de Neon |
-| `DB_PORT` | `5432` |
-| `DB_SSLMODE` | `require` |
+| `DATABASE_URL` | URL pooled de Neon para las peticiones de la aplicación |
+| `DATABASE_URL_UNPOOLED` | URL directa de Neon para ejecutar migraciones |
 | `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | Igual que en la sección 3.1 |
 | `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` | Igual que en la sección 3.2 |
 | `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | Correo y contraseña del primer administrador |
+
+Para migrar manualmente desde PowerShell, usa la URL directa durante ese comando:
+
+```powershell
+$env:DJANGO_USE_UNPOOLED_DATABASE = "true"
+try {
+    .\.venv\Scripts\python.exe manage.py migrate
+} finally {
+    Remove-Item Env:DJANGO_USE_UNPOOLED_DATABASE -ErrorAction SilentlyContinue
+}
+```
 
 5. Pulsa **Create Web Service**. Cuando el log diga *Your service is live*, abre `https://tu-servicio.onrender.com`.
 

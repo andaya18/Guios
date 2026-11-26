@@ -2,6 +2,8 @@ import os
 import sys
 from pathlib import Path
 
+from guios.database import database_config
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -62,18 +64,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "guios.wsgi.application"
 ASGI_APPLICATION = "guios.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.getenv("DB_USER", ""),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", ""),
-        "PORT": os.getenv("DB_PORT", ""),
-        # Hosted PostgreSQL (Neon, Render) requires TLS: set DB_SSLMODE=require there.
-        "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE")} if os.getenv("DB_SSLMODE") else {},
-    }
-}
+DATABASES = {"default": database_config(BASE_DIR)}
 
 AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
