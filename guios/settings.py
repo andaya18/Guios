@@ -2,9 +2,6 @@ import os
 import sys
 from pathlib import Path
 
-from guios.database import database_config
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 from guios.env import load_env_file  # noqa: E402  (needs BASE_DIR)
@@ -64,7 +61,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "guios.wsgi.application"
 ASGI_APPLICATION = "guios.asgi.application"
 
-DATABASES = {"default": database_config(BASE_DIR)}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]

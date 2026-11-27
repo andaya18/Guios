@@ -1,5 +1,5 @@
 # GUIOS PRO
-Sistema web de evaluación GUIOS con Python 3.12, Django 5.x y PostgreSQL.
+Sistema web de evaluación GUIOS con Python 3.12, Django 5.x y SQLite local.
 
 ## Comandos (PowerShell, desde la raíz)
 - Crear entorno: `py -3.12 -m venv .venv`

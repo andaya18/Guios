@@ -5,15 +5,15 @@ con Python 3.12 y Django 5.1.
 
 ## Presentación: todo local
 
-La aplicación se ejecuta en el computador desde el que se presenta y guarda los datos en SQLite (`db.sqlite3`).
-No necesita hosting ni una base de datos remota. El envío de códigos usa el servidor SMTP que configures y las
-sugerencias de IA usan Gemini; ambas integraciones requieren credenciales propias e internet.
+La aplicación y su base de datos SQLite (`db.sqlite3`) se ejecutan en tu computador. No requiere hosting ni
+credenciales de base de datos. Para enviar códigos y consultar Gemini, cada persona configura su propia cuenta
+SMTP y clave de API; esas dos funciones requieren internet.
 
 ### Recorrido rápido
 
 1. Clona el repositorio e instala las dependencias.
-2. Copia `.env.example` a `.env` y agrega tus propias credenciales de SMTP y Gemini.
-3. Crea las tablas, carga los datos iniciales y prepara las cuentas de prueba.
+2. Crea `.env` copiando `.env.example`; agrega tus credenciales SMTP y Gemini.
+3. Migra la base local, carga el catálogo y crea las cuentas de administrador y decisor.
 4. Inicia Django localmente y abre `http://127.0.0.1:8000/`.
 
 > **No compartas ni subas `.env`.** Puede contener contraseñas de las cuentas de prueba.
@@ -27,40 +27,34 @@ sugerencias de IA usan Gemini; ambas integraciones requieren credenciales propia
 | Git | Clonar el proyecto |
 | PowerShell | Ejecutar los comandos de esta guía en Windows |
 
-No necesitas Render ni Neon. Para usar correo real necesitas una cuenta con acceso SMTP; para las sugerencias
-de IA necesitas una clave de Gemini. Cada persona debe configurar sus propias credenciales en `.env`.
+Para el correo real necesitas una cuenta con acceso SMTP; para las sugerencias de IA necesitas una clave de
+Gemini. Cada persona debe usar sus propias credenciales en `.env`.
 
 ## 2. Clonar e instalar
 
-En PowerShell, desde la carpeta donde guardarás el proyecto:
+En PowerShell, desde la carpeta donde guardarás el proyecto. El comando solo crea `.env` si todavía no existe;
+si ya tienes uno, se conserva y lo editas:
 
 ```powershell
 git clone https://github.com/andaya18/Guios.git
 Set-Location Guios
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements\development.txt
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
 Si `py -3.12` no se reconoce, instala Python 3.12 y vuelve a abrir PowerShell. Mantén el archivo `.env`
-junto a `manage.py`; Django lo lee al arrancar.
+junto a `manage.py`; Django lo lee al arrancar. Completa `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`,
+`DEFAULT_FROM_EMAIL` y `AI_API_KEY` con tus propios datos.
 
 ## 3. Configurar `.env`
 
 ### Base local
 
-SQLite se guarda en `db.sqlite3` junto a `manage.py`. Asegúrate de que `.env` tenga esta configuración local:
-
-```ini
-DATABASE_URL=
-DATABASE_URL_UNPOOLED=
-DJANGO_USE_UNPOOLED_DATABASE=false
-DB_ENGINE=django.db.backends.sqlite3
-```
-
-Si ya tenías una `.env` con una URL de PostgreSQL, bórrala o déjala vacía para usar SQLite. Reinicia Django
-después de editar la configuración.
+La base de datos ya está configurada para SQLite y se crea como `db.sqlite3` junto a `manage.py`. No agregues
+variables de conexión a bases de datos. Si `.env` ya existía, elimina cualquier URL o credencial de base de
+datos que haya quedado allí. Reinicia Django después de editar `.env`.
 
 Confirma que Django seleccionó SQLite:
 
@@ -68,30 +62,29 @@ Confirma que Django seleccionó SQLite:
 .\.venv\Scripts\python.exe manage.py shell -c "from django.conf import settings; print(settings.DATABASES['default']['ENGINE'])"
 ```
 
-Debe mostrar `django.db.backends.sqlite3`. Si no coincide, revisa `.env` y las variables de entorno de Windows:
-las variables del proceso tienen prioridad.
+Debe mostrar `django.db.backends.sqlite3`.
 
 ### Correo de verificación
 
-Configura en `.env` el servidor SMTP de tu proveedor de correo y completa estos campos con sus valores:
+En `.env.example` ya está el ejemplo para Gmail. Reemplaza usuario, contraseña de aplicación y remitente por
+tus propios valores. No uses la contraseña normal de tu cuenta de correo:
 
 ```ini
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=
+EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
 EMAIL_USE_TLS=true
-DEFAULT_FROM_EMAIL=tu-correo-verificado@ejemplo.com
+EMAIL_HOST_USER=tu-cuenta@gmail.com
+EMAIL_HOST_PASSWORD=tu-contrasena-de-aplicacion
+DEFAULT_FROM_EMAIL=GUIOS PRO <tu-cuenta@gmail.com>
 ```
 
-El remitente debe estar autorizado por el proveedor SMTP. Al registrar una cuenta, Django enviará el código a
-ese correo. Si SMTP no está configurado correctamente, el envío fallará; no hay un fallback automático a la
-terminal.
+El remitente debe estar autorizado por tu proveedor. Si usas otro servicio SMTP, reemplaza el host, puerto y
+configuración TLS por los que te indique. Sin credenciales SMTP válidas, el correo no se enviará.
 
 ### Sugerencias de IA
 
-Para habilitar Gemini, configura tu propia clave en `.env`:
+En `.env.example`, reemplaza `AI_API_KEY` por tu propia clave de Gemini:
 
 ```ini
 AI_PROVIDER=gemini
@@ -103,27 +96,9 @@ AI_GROUNDING=url
 La app necesita conexión a internet para consultar Gemini. Sin clave, sin conexión o si se alcanza la cuota,
 se usan los valores de respaldo de la Tabla 17.
 
-### Cuentas de prueba
+## 4. Preparar la base y crear cuentas
 
-Agrega a tu `.env` correos y contraseñas propios para crear un administrador y un decisor. No uses las
-credenciales de ejemplo en un archivo del repositorio:
-
-```ini
-GUIOS_TEST_ADMIN_EMAIL=
-GUIOS_TEST_ADMIN_PASSWORD=
-GUIOS_TEST_DECISOR_EMAIL=
-GUIOS_TEST_DECISOR_PASSWORD=
-# Opcionales:
-GUIOS_TEST_ADMIN_FIRST_NAME=Administrador
-GUIOS_TEST_DECISOR_FIRST_NAME=Decisor
-```
-
-Las contraseñas deben cumplir las validaciones del proyecto. El comando de provisión no cambia cuentas
-existentes; si los correos ya existen con otra contraseña o rol, informa el conflicto.
-
-## 4. Preparar la base local y las cuentas
-
-Ejecuta estos comandos desde la raíz del proyecto. Django crea y actualiza `db.sqlite3` localmente:
+Ejecuta desde la raíz del proyecto:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py migrate
@@ -136,16 +111,14 @@ Carga el catálogo metodológico y la literatura inicial:
 .\.venv\Scripts\python.exe manage.py cargar_literatura
 ```
 
-Si configuraste las cuatro variables `GUIOS_TEST_*` en `.env`, crea las cuentas de demostración:
+Crear el administrador:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py provision_test_users --confirm
+.\.venv\Scripts\python.exe manage.py createsuperuser
 ```
 
-El administrador recibe permisos de administración. El decisor se crea sin organización; asígnale una desde
-la aplicación si necesitas demostrar funciones filtradas por organización. Si prefieres crear el administrador
-manualmente, usa `python manage.py createsuperuser`; el decisor puede registrarse desde la página **Crear
-cuenta**.
+El decisor se registra desde **Crear cuenta** en la aplicación. Su código de verificación llegará al correo
+configurado en SMTP.
 
 ## 5. Ejecutar la presentación
 
@@ -167,47 +140,16 @@ accesible o un servidor web; esta guía deliberadamente no configura ese desplie
 La suite debe ejecutarse contra SQLite, nunca contra una base de datos remota. En PowerShell:
 
 ```powershell
-$names = @(
-    "DATABASE_URL", "DATABASE_URL_UNPOOLED", "DJANGO_USE_UNPOOLED_DATABASE",
-    "DB_ENGINE", "DB_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT",
-    "DB_SSLMODE", "EMAIL_BACKEND", "AI_PROVIDER"
-)
-$previous = @{}
-foreach ($name in $names) {
-    $previous[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
-}
-try {
-    $env:DATABASE_URL = ""
-    $env:DATABASE_URL_UNPOOLED = ""
-    $env:DJANGO_USE_UNPOOLED_DATABASE = "false"
-    $env:DB_ENGINE = "django.db.backends.sqlite3"
-    $env:DB_NAME = Join-Path $PWD "db.sqlite3"
-    $env:DB_USER = ""
-    $env:DB_PASSWORD = ""
-    $env:DB_HOST = ""
-    $env:DB_PORT = ""
-    $env:DB_SSLMODE = ""
-    $env:EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    $env:AI_PROVIDER = "disabled"
-    .\.venv\Scripts\python.exe manage.py test
-} finally {
-    foreach ($name in $names) {
-        if ($null -eq $previous[$name]) {
-            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
-        } else {
-            Set-Item "Env:$name" $previous[$name]
-        }
-    }
-}
+.\.venv\Scripts\python.exe manage.py test
 ```
 
-Las pruebas no llaman a Gemini ni envían correos reales.
+Las pruebas usan SQLite y no envían correos reales ni consultan Gemini.
 
 ## 7. Problemas frecuentes
 
 | Síntoma | Qué revisar |
 |---|---|
-| Django no selecciona SQLite | Revisa `.env` y las variables de entorno de Windows; deben coincidir con la configuración local de esta guía. |
+| Django no selecciona SQLite | Confirma que el proyecto usa el `settings.py` incluido y reinicia Django. |
 | `no such table` o tabla inexistente | Ejecuta `migrate` y carga el catálogo y la literatura en la base local. |
 | No llega el código de registro | Revisa el host, puerto, usuario, contraseña y remitente SMTP; el proveedor debe permitir el envío. |
 | Se muestran valores de respaldo | Revisa la clave Gemini, la conexión a internet y la cuota disponible. |
