@@ -90,6 +90,23 @@ def current_run():
     return runs.filter(origin="ia").first() or runs.first()
 
 
+def display_run():
+    """Return a stored run or a fast fallback placeholder without calling the AI."""
+    run = current_run()
+    if run:
+        return run
+
+    documents = _documents()
+    hash_ = corpus_hash(documents)
+    try:
+        verifier = get_verifier()
+    except AIUnavailable as error:
+        reason = str(error)
+    else:
+        reason = "pending" if verifier else "disabled"
+    return _fallback_run(hash_, documents, reason)
+
+
 def _assessment_for(document, verifier):
     content_hash = document_hash(document)
     cached = DocumentAssessment.objects.filter(document=document, content_hash=content_hash, model=verifier.model).first()
@@ -138,7 +155,8 @@ def _save_run(hash_, origin, rows, documents, model="", cuts=(), error=""):
 
 def _fallback_run(hash_, documents, error):
     fallback = fallback_values()
-    logger.warning("Importancia sugerida: se usa el respaldo (%s).", error)
+    if error != "pending":
+        logger.warning("Importancia sugerida: se usa el respaldo (%s).", error)
     rows = [
         {"factor": factor, "ns": ns, "value": fallback[factor.name], "fallback_value": fallback[factor.name], "origin": "respaldo"}
         for factor, ns in _factors_with_ns()
@@ -231,7 +249,7 @@ def apply_to_draft(run):
     from apps.catalog.models import FactorVersion
     from apps.management import services as catalog
 
-    if run.origin != "ia":
+    if run is None or run.origin != "ia":
         raise DraftNotAllowed("Solo se puede crear un borrador con valores calculados por la IA.")
     draft = catalog.create_draft()
     scopes = dict(FactorVersion.objects.filter(version=draft).values_list("factor_id", "default_scope"))

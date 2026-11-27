@@ -36,6 +36,7 @@ class SuggestedImportanceViewTests(TestCase):
 
     def test_with_ai_shows_formula_values_and_sources(self):
         with patch("apps.literature.services.get_verifier", return_value=FakeVerifier()):
+            self.client.post(f"{URL}recalcular/")
             response = self.client.get(URL)
 
         self.assertContains(response, "Calculada con IA")
@@ -54,7 +55,7 @@ class SuggestedImportanceViewTests(TestCase):
 
     def test_deleting_a_citation_recalculates_on_next_view(self):
         with patch("apps.literature.services.get_verifier", return_value=FakeVerifier()):
-            self.client.get(URL)
+            self.client.post(f"{URL}recalcular/")
         citation = Citation.objects.filter(document__key="kereu-2024").get()
 
         response = self.client.post(f"{URL}citas/{citation.pk}/eliminar/")
@@ -64,8 +65,23 @@ class SuggestedImportanceViewTests(TestCase):
         verifier = FakeVerifier()
         with patch("apps.literature.services.get_verifier", return_value=verifier):
             self.client.get(URL)
-        self.assertEqual(verifier.calls, [])
+            self.client.post(f"{URL}recalcular/")
         self.assertEqual(ImportanceRun.objects.filter(origin="ia").first().factors.get(factor__name="Coste total de propiedad (TCO)").tc, 2)
+
+    def test_get_does_not_block_on_ai_calculation(self):
+        with patch("apps.literature.views.services.compute", side_effect=AssertionError("GET must not calculate")), \
+             patch("apps.literature.views.services.get_verifier", return_value=FakeVerifier()):
+            response = self.client.get(URL)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-auto-recalculate=\"true\"")
+
+    def test_recalculate_supports_json_response(self):
+        with patch("apps.literature.services.get_verifier", return_value=FakeVerifier()):
+            response = self.client.post(f"{URL}recalcular/", HTTP_ACCEPT="application/json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["origin"], "ia")
 
     def test_add_document_with_citation(self):
         factor = Factor.objects.get(name="Casos de estudio de adopción FLOSS")
@@ -88,7 +104,7 @@ class SuggestedImportanceViewTests(TestCase):
 
     def test_create_draft_from_ai_values(self):
         with patch("apps.literature.services.get_verifier", return_value=FakeVerifier(scores_by_document={"li-2022": 0})):
-            self.client.get(URL)
+            self.client.post(f"{URL}recalcular/")
         run = ImportanceRun.objects.get(origin="ia")
 
         response = self.client.post(f"{URL}crear-borrador/")

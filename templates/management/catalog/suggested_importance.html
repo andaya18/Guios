@@ -20,16 +20,17 @@
     {% include "components/icon.html" with name="alert" %}
     <div>
         <strong>Valores de respaldo</strong> (Tabla 17 de la revisión 2020–2025) · {{ run.created_at|date:"d/m/Y H:i" }}
-        <p>{% if run.error == "disabled" %}La IA no está configurada: define AI_PROVIDER=gemini y AI_API_KEY en las variables de entorno.{% else %}La IA no pudo calcular el valor: {{ run.error }}.{% endif %} Se reemplazarán por el cálculo de la IA cuando vuelva a estar disponible.</p>
+        <p>{% if run.error == "pending" %}La página ya está lista. El cálculo con IA comenzará automáticamente.{% elif run.error == "disabled" %}La IA no está configurada: define AI_PROVIDER=gemini y AI_API_KEY en las variables de entorno.{% else %}La IA no pudo calcular el valor: {{ run.error }}. Puedes volver a intentarlo sin bloquear la página.{% endif %}</p>
     </div>
 </div>
 {% endif %}
 
 <div class="importance-actions">
-    <form method="post" action="{% url 'management:suggested_importance_recalculate' %}">{% csrf_token %}<button class="button button--secondary" type="submit">Recalcular ahora</button></form>
+    <form method="post" action="{% url 'management:suggested_importance_recalculate' %}" data-ai-recalculate data-auto-recalculate="{{ auto_recalculate|yesno:'true,false' }}">{% csrf_token %}<button class="button button--secondary" type="submit">Recalcular ahora</button></form>
     {% if run.origin == "ia" %}
     <form method="post" action="{% url 'management:suggested_importance_draft' %}">{% csrf_token %}<button class="button button--primary" type="submit">Crear borrador del catálogo con esta IS</button></form>
     {% endif %}
+    <p data-ai-status role="status" aria-live="polite" {% if not auto_recalculate %}hidden{% endif %}>La IA está evaluando los documentos. Puedes seguir usando esta página mientras termina.</p>
 </div>
 
 <section class="panel panel--flush">
@@ -104,3 +105,4 @@
     </section>
 </div>
 {% endblock %}
+{% block page_scripts %}<script src="{% static 'js/suggested_importance.js' %}" defer></script>{% endblock %}

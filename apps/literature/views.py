@@ -1,5 +1,6 @@
 """Administrator screen for the AI-computed suggested importance (catalog tab)."""
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -25,7 +26,7 @@ class SuggestedImportanceView(AdministratorRequiredMixin, View):
         return self.render_page(request, DocumentForm())
 
     def render_page(self, request, form):
-        run = services.compute()  # recalculates automatically when documents or citations changed
+        run = services.display_run()
         assessments = services.latest_assessments()
         documents = []
         for document in Document.objects.prefetch_related("citations__subfactor__factor"):
@@ -38,6 +39,7 @@ class SuggestedImportanceView(AdministratorRequiredMixin, View):
             })
         return render(request, "management/catalog/suggested_importance.html", {
             "run": run,
+            "auto_recalculate": run.origin == "respaldo" and run.error == "pending",
             "rows": run.factors.select_related("factor"),
             "documents": documents,
             "form": form,
@@ -52,6 +54,8 @@ class SuggestedImportanceView(AdministratorRequiredMixin, View):
 class RecalculateView(AdministratorRequiredMixin, View):
     def post(self, request):
         run = services.compute(force=True)
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse({"origin": run.origin, "error": run.error, "model": run.model})
         if run.origin == "ia":
             messages.success(request, "Importancia sugerida recalculada con IA.")
         else:
@@ -92,7 +96,7 @@ class CitationDeleteView(AdministratorRequiredMixin, View):
 class DraftFromRunView(AdministratorRequiredMixin, View):
     def post(self, request):
         try:
-            draft = services.apply_to_draft(services.compute())
+            draft = services.apply_to_draft(services.current_run())
         except services.DraftNotAllowed as error:
             messages.error(request, str(error))
             return redirect(PAGE)
